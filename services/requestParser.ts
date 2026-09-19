@@ -56,8 +56,35 @@ export function parseStudentRequest(message: string): StudentRequest {
     accessNeeds.push("elevator");
   }
 
+  // Energy level
+  let energyLevel: "low" | "moderate" | "normal" = "normal";
+
+  if (
+    text.includes("exhausted") ||
+    text.includes("very tired") ||
+    text.includes("no energy")
+  ) {
+    energyLevel = "low";
+  } else if (text.includes("tired") || text.includes("fatigued")) {
+    energyLevel = "moderate";
+  }
+
+  // Urgency
+  let urgency: "low" | "normal" | "high" = "normal";
+
+  if (
+    text.includes("in a hurry") ||
+    text.includes("running late") ||
+    text.includes("in 10 minutes") ||
+    text.includes("in 15 minutes")
+  ) {
+    urgency = "high";
+  }
+
   return {
     message,
     accessNeeds,
+    urgency,
+    energyLevel,
   };
 }

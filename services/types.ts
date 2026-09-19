@@ -15,6 +15,8 @@ export interface StudentRequest {
   origin?: string;
   destination?: string;
   accessNeeds: AccessNeed[];
+  urgency?: "low" | "normal" | "high";
+  energyLevel?: "low" | "moderate" | "normal";
 }
 
 export interface Route {
