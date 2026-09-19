@@ -1,4 +1,5 @@
 import { runHokieAgent } from "./agent";
+import { parseStudentRequestWithAI } from "./aiParser";
 import { parseStudentRequest } from "./requestParser";
 
 // =====================================================
@@ -73,3 +74,27 @@ const urgencyMessage =
 const urgencyResult = parseStudentRequest(urgencyMessage);
 
 console.log(urgencyResult);
+
+// =====================================================
+// TEST 6: GEMINI → HOKIE AGENT
+// =====================================================
+
+console.log("\n===== GEMINI → HOKIE AGENT TEST =====");
+
+const aiMessage =
+  "I'm exhausted and running late. I'm at Newman Library and need to get to Squires Student Center. I don't want stairs and I need somewhere to sit.";
+
+parseStudentRequestWithAI(aiMessage)
+  .then((studentRequest) => {
+    console.log("\nAI PARSED REQUEST:");
+    console.log(studentRequest);
+
+    const accessPlan = runHokieAgent(studentRequest);
+
+    console.log("\nFINAL ACCESS PLAN:");
+    console.log(accessPlan);
+  })
+  .catch((error) => {
+    console.error("AI agent test failed:");
+    console.error(error);
+  });
