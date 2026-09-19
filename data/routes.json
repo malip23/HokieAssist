@@ -68,5 +68,19 @@
     "seating": true,
     "restroom_nearby": true,
     "water_nearby": true
+  },
+  {
+    "route_id": "route_006",
+    "origin": "Newman Library",
+    "destination": "Squires Student Center",
+    "walking_time": 14,
+    "distance_miles": 0.7,
+    "stairs": 0,
+    "elevators": 0,
+    "slope": "low",
+    "indoor_percentage": 25,
+    "seating": true,
+    "restroom_nearby": true,
+    "water_nearby": true
   }
 ]
