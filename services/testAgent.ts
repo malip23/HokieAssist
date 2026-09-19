@@ -1,4 +1,9 @@
 import { runHokieAgent } from "./agent";
+import { parseStudentRequest } from "./requestParser";
+
+// =====================================================
+// TEST 1: No stairs + seating
+// =====================================================
 
 console.log("===== TEST 1: No stairs + seating =====");
 
@@ -12,6 +17,10 @@ const test1 = runHokieAgent({
 
 console.log(test1);
 
+// =====================================================
+// TEST 2: Indoor route
+// =====================================================
+
 console.log("\n===== TEST 2: Indoor route =====");
 
 const test2 = runHokieAgent({
@@ -24,6 +33,10 @@ const test2 = runHokieAgent({
 
 console.log(test2);
 
+// =====================================================
+// TEST 3: Low stimulation
+// =====================================================
+
 console.log("\n===== TEST 3: Low stimulation =====");
 
 const test3 = runHokieAgent({
@@ -35,13 +48,28 @@ const test3 = runHokieAgent({
 
 console.log(test3);
 
-import { parseStudentRequest } from "./requestParser";
+// =====================================================
+// TEST 4: Natural language
+// =====================================================
 
-console.log("\n===== NATURAL LANGUAGE TEST =====");
+console.log("\n===== TEST 4: NATURAL LANGUAGE =====");
 
-const message =
+const naturalLanguageMessage =
   "I'm exhausted and need to get somewhere without stairs. I also need somewhere to sit.";
 
-const parsed = parseStudentRequest(message);
+const naturalLanguageResult = parseStudentRequest(naturalLanguageMessage);
 
-console.log(parsed);
+console.log(naturalLanguageResult);
+
+// =====================================================
+// TEST 5: Energy + urgency
+// =====================================================
+
+console.log("\n===== TEST 5: ENERGY + URGENCY =====");
+
+const urgencyMessage =
+  "I'm exhausted and running late. I need to get somewhere without stairs and I need somewhere to sit.";
+
+const urgencyResult = parseStudentRequest(urgencyMessage);
+
+console.log(urgencyResult);
