@@ -1,0 +1,77 @@
+[
+  {
+    "id": "newman",
+    "building": "Newman Library",
+    "entrances": 3,
+    "elevators": true,
+    "stairs": true,
+    "restrooms": true,
+    "seating": true,
+    "quiet_spaces": true,
+    "water": true,
+    "accessibility_features": [
+      "elevator",
+      "indoor seating",
+      "quiet spaces",
+      "water fountain"
+    ]
+  },
+  {
+    "id": "squires",
+    "building": "Squires Student Center",
+    "entrances": 4,
+    "elevators": true,
+    "stairs": true,
+    "restrooms": true,
+    "seating": true,
+    "quiet_spaces": true,
+    "water": true,
+    "accessibility_features": [
+      "elevator",
+      "seating",
+      "restrooms",
+      "water fountain"
+    ]
+  },
+  {
+    "id": "torgersen",
+    "building": "Torgersen Hall",
+    "entrances": 3,
+    "elevators": true,
+    "stairs": true,
+    "restrooms": true,
+    "seating": true,
+    "quiet_spaces": true,
+    "water": true,
+    "accessibility_features": ["elevator", "seating", "indoor route options"]
+  },
+  {
+    "id": "mcbryde",
+    "building": "McBryde Hall",
+    "entrances": 3,
+    "elevators": true,
+    "stairs": true,
+    "restrooms": true,
+    "seating": true,
+    "quiet_spaces": false,
+    "water": true,
+    "accessibility_features": ["elevator", "restrooms", "water fountain"]
+  },
+  {
+    "id": "goodwin",
+    "building": "Goodwin Hall",
+    "entrances": 4,
+    "elevators": true,
+    "stairs": true,
+    "restrooms": true,
+    "seating": true,
+    "quiet_spaces": true,
+    "water": true,
+    "accessibility_features": [
+      "elevator",
+      "seating",
+      "restrooms",
+      "water fountain"
+    ]
+  }
+]

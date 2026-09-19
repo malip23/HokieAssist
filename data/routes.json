@@ -1,0 +1,72 @@
+[
+  {
+    "route_id": "route_001",
+    "origin": "Newman Library",
+    "destination": "Squires Student Center",
+    "walking_time": 12,
+    "distance_miles": 0.6,
+    "stairs": 0,
+    "elevators": 1,
+    "slope": "low",
+    "indoor_percentage": 40,
+    "seating": true,
+    "restroom_nearby": true,
+    "water_nearby": true
+  },
+  {
+    "route_id": "route_002",
+    "origin": "Newman Library",
+    "destination": "Squires Student Center",
+    "walking_time": 9,
+    "distance_miles": 0.4,
+    "stairs": 18,
+    "elevators": 0,
+    "slope": "medium",
+    "indoor_percentage": 20,
+    "seating": false,
+    "restroom_nearby": false,
+    "water_nearby": false
+  },
+  {
+    "route_id": "route_003",
+    "origin": "Torgersen Hall",
+    "destination": "Squires Student Center",
+    "walking_time": 8,
+    "distance_miles": 0.3,
+    "stairs": 0,
+    "elevators": 1,
+    "slope": "low",
+    "indoor_percentage": 65,
+    "seating": true,
+    "restroom_nearby": true,
+    "water_nearby": true
+  },
+  {
+    "route_id": "route_004",
+    "origin": "McBryde Hall",
+    "destination": "Newman Library",
+    "walking_time": 10,
+    "distance_miles": 0.5,
+    "stairs": 0,
+    "elevators": 0,
+    "slope": "medium",
+    "indoor_percentage": 15,
+    "seating": true,
+    "restroom_nearby": false,
+    "water_nearby": true
+  },
+  {
+    "route_id": "route_005",
+    "origin": "Goodwin Hall",
+    "destination": "Squires Student Center",
+    "walking_time": 14,
+    "distance_miles": 0.7,
+    "stairs": 0,
+    "elevators": 1,
+    "slope": "low",
+    "indoor_percentage": 35,
+    "seating": true,
+    "restroom_nearby": true,
+    "water_nearby": true
+  }
+]
