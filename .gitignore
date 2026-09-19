@@ -56,3 +56,6 @@ example
 .pi/
 .windsurf/
 GEMINI.md
+
+# Local environment variables
+.env
