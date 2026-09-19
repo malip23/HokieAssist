@@ -1,7 +1,21 @@
 import routesData from "../data/routes.json";
 import { AccessNeed, Route } from "./types";
 
-const routes = routesData as Route[];
+const routes: Route[] = routesData.map((route) => ({
+  id: route.route_id,
+  origin: route.origin,
+  destination: route.destination,
+  distance: route.distance_miles,
+  walkingTime: route.walking_time,
+  stairs: route.stairs,
+  elevators: route.elevators,
+  slope: route.slope as Route["slope"],
+  indoorPercentage: route.indoor_percentage,
+  seatingAvailable: route.seating,
+  restroomNearby: route.restroom_nearby,
+  waterNearby: route.water_nearby,
+  crowded: false,
+}));
 
 export function findRoutes(
   origin: string,
