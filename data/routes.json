@@ -1,0 +1,47 @@
+[
+  {
+    "id": "route-001",
+    "origin": "Newman Library",
+    "destination": "Squires Student Center",
+    "distance": 0.5,
+    "walkingTime": 12,
+    "stairs": 0,
+    "elevators": 1,
+    "slope": "low",
+    "indoorPercentage": 60,
+    "seatingAvailable": true,
+    "restroomNearby": true,
+    "waterNearby": true,
+    "crowded": false
+  },
+  {
+    "id": "route-002",
+    "origin": "Newman Library",
+    "destination": "Squires Student Center",
+    "distance": 0.4,
+    "walkingTime": 8,
+    "stairs": 2,
+    "elevators": 0,
+    "slope": "moderate",
+    "indoorPercentage": 20,
+    "seatingAvailable": false,
+    "restroomNearby": false,
+    "waterNearby": true,
+    "crowded": true
+  },
+  {
+    "id": "route-003",
+    "origin": "Newman Library",
+    "destination": "Squires Student Center",
+    "distance": 0.6,
+    "walkingTime": 14,
+    "stairs": 0,
+    "elevators": 1,
+    "slope": "low",
+    "indoorPercentage": 90,
+    "seatingAvailable": true,
+    "restroomNearby": true,
+    "waterNearby": true,
+    "crowded": false
+  }
+]
