@@ -1,0 +1,47 @@
+[
+  {
+    "condition_id": "condition_001",
+    "location": "Squires Student Center",
+    "timestamp": "2026-09-19T12:30:00",
+    "crowd_level": "high",
+    "noise_level": "high",
+    "temperature_f": 72,
+    "construction": false,
+    "blocked_route": false,
+    "message": "Career fair traffic is causing heavier crowds near the main entrance."
+  },
+  {
+    "condition_id": "condition_002",
+    "location": "Squires Student Center",
+    "timestamp": "2026-09-19T12:40:00",
+    "crowd_level": "high",
+    "noise_level": "high",
+    "temperature_f": 72,
+    "construction": false,
+    "blocked_route": true,
+    "affected_feature": "elevator",
+    "message": "Elevator on the student's original route is temporarily unavailable."
+  },
+  {
+    "condition_id": "condition_003",
+    "location": "Newman Library",
+    "timestamp": "2026-09-19T12:30:00",
+    "crowd_level": "low",
+    "noise_level": "low",
+    "temperature_f": 70,
+    "construction": false,
+    "blocked_route": false,
+    "message": "Quiet conditions with indoor seating available."
+  },
+  {
+    "condition_id": "condition_004",
+    "location": "Torgersen Hall",
+    "timestamp": "2026-09-19T13:00:00",
+    "crowd_level": "medium",
+    "noise_level": "medium",
+    "temperature_f": 71,
+    "construction": false,
+    "blocked_route": false,
+    "message": "Normal campus conditions."
+  }
+]

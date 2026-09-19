@@ -1,0 +1,57 @@
+[
+  {
+    "event_id": "event_001",
+    "name": "Engineering Career Fair",
+    "building": "Squires Student Center",
+    "room": "Commonwealth Ballroom",
+    "start_time": "13:00",
+    "end_time": "16:00",
+    "event_type": "career",
+    "expected_crowd": "high",
+    "noise_level": "high"
+  },
+  {
+    "event_id": "event_002",
+    "name": "Cybersecurity Club Meeting",
+    "building": "Torgersen Hall",
+    "room": "1060",
+    "start_time": "18:00",
+    "end_time": "19:00",
+    "event_type": "student organization",
+    "expected_crowd": "medium",
+    "noise_level": "medium"
+  },
+  {
+    "event_id": "event_003",
+    "name": "Resume Workshop",
+    "building": "Squires Student Center",
+    "room": "215",
+    "start_time": "14:00",
+    "end_time": "15:00",
+    "event_type": "career",
+    "expected_crowd": "medium",
+    "noise_level": "medium"
+  },
+  {
+    "event_id": "event_004",
+    "name": "Undergraduate Research Information Session",
+    "building": "Goodwin Hall",
+    "room": "190",
+    "start_time": "17:00",
+    "end_time": "18:00",
+    "event_type": "academic",
+    "expected_crowd": "medium",
+    "noise_level": "low"
+  },
+  {
+    "event_id": "event_005",
+    "name": "Quiet Study Session",
+    "building": "Newman Library",
+    "room": "Second Floor",
+    "start_time": "19:00",
+    "end_time": "21:00",
+    "event_type": "study",
+    "expected_crowd": "low",
+    "noise_level": "low"
+  }
+]
