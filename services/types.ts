@@ -27,7 +27,7 @@ export interface Route {
   walkingTime: number;
   stairs: number;
   elevators: number;
-  slope: "low" | "moderate" | "high";
+  slope: "low" | "medium" | "moderate" | "high";
   indoorPercentage: number;
   seatingAvailable: boolean;
   restroomNearby: boolean;
