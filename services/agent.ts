@@ -2,7 +2,9 @@ import { createAccessPlan } from "./accessPlan";
 import { findRoutes } from "./routes";
 import { AccessPlan, StudentRequest } from "./types";
 
-export function runHokieAgent(request: StudentRequest): AccessPlan {
+export async function runHokieAgent(
+  request: StudentRequest,
+): Promise<AccessPlan> {
   if (!request.origin || !request.destination) {
     return {
       summary:
@@ -13,7 +15,7 @@ export function runHokieAgent(request: StudentRequest): AccessPlan {
     };
   }
 
-  const routes = findRoutes(
+  const routes = await findRoutes(
     request.origin,
     request.destination,
     request.accessNeeds,
