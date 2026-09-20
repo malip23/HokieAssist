@@ -1,26 +1,64 @@
-import routesData from "../data/routes.json";
-
+import { findRoutes as findDatabricksRoutes } from "../server/services/databricks";
 import { AccessNeed, Route } from "./types";
 
-const routes: Route[] = routesData.map((route) => ({
-  id: route.route_id,
-  origin: route.origin,
-  destination: route.destination,
-  distance: route.distance_miles,
-  walkingTime: route.walking_time,
-  stairs: route.stairs,
-  elevators: route.elevators,
-  slope: route.slope as Route["slope"],
-  indoorPercentage: route.indoor_percentage,
-  seatingAvailable: route.seating,
-  restroomNearby: route.restroom_nearby,
-  waterNearby: route.water_nearby,
-  crowded: false,
-}));
+type DatabricksRouteRow = {
+  route_id: string;
+  origin: string;
+  destination: string;
+  distance_miles: number;
+  walking_time: number;
+  stairs: number;
+  elevators: number;
+  slope: string;
+  indoor_percentage: number;
+  seating: boolean;
+  restroom_nearby: boolean;
+  water_nearby: boolean;
+};
 
 interface RoutePreferences {
   energyLevel?: "low" | "moderate" | "normal";
   urgency?: "low" | "normal" | "high";
+}
+
+function normalizeSlope(value: string): Route["slope"] {
+  const slope = value?.toLowerCase();
+
+  if (slope === "high") {
+    return "high";
+  }
+
+  if (slope === "moderate" || slope === "medium") {
+    return "moderate";
+  }
+
+  return "low";
+}
+
+function toBoolean(value: unknown): boolean {
+  return value === true || value === "true" || value === 1;
+}
+
+function convertDatabricksRoute(
+  row: DatabricksRouteRow,
+): Route {
+  return {
+    id: row.route_id,
+    origin: row.origin,
+    destination: row.destination,
+    distance: Number(row.distance_miles),
+    walkingTime: Number(row.walking_time),
+    stairs: Number(row.stairs),
+    elevators: Number(row.elevators),
+    slope: normalizeSlope(row.slope),
+    indoorPercentage: Number(row.indoor_percentage),
+    seatingAvailable: toBoolean(row.seating),
+    restroomNearby: toBoolean(row.restroom_nearby),
+    waterNearby: toBoolean(row.water_nearby),
+
+    // Crowding can later come from Databricks conditions.
+    crowded: false,
+  };
 }
 
 /**
@@ -91,27 +129,20 @@ function scoreRoute(
   // --------------------------------
 
   if (preferences.energyLevel === "low") {
-    // Walking becomes more important when the
-    // student has low energy.
     score += route.walkingTime * 0.75;
-
-    // Stairs become more important.
     score += route.stairs * 10;
 
-    // Prefer elevators when available.
     if (route.elevators > 0) {
       score -= 5;
     }
 
-    // Prefer routes with seating.
     if (route.seatingAvailable) {
       score -= 5;
     }
 
-    // Avoid steep routes.
     if (route.slope === "high") {
       score += 20;
-    } else if (route.slope === "moderate" || route.slope === "medium") {
+    } else if (route.slope === "moderate") {
       score += 8;
     }
   }
@@ -129,16 +160,11 @@ function scoreRoute(
   // --------------------------------
 
   if (preferences.urgency === "high") {
-    // When running late, walking time matters more.
     score += route.walkingTime * 1.5;
-
-    // Distance matters too.
     score += route.distance * 5;
   }
 
   if (preferences.urgency === "low") {
-    // If there is no rush, accessibility features
-    // can matter more than raw speed.
     if (route.seatingAvailable) {
       score -= 3;
     }
@@ -152,35 +178,39 @@ function scoreRoute(
 }
 
 /**
- * Finds and ranks routes based on the student's
- * access needs and current situation.
+ * Gets routes from Databricks and ranks them using
+ * HokieAssist's existing accessibility scoring.
  */
-export function findRoutes(
+export async function findRoutes(
   origin: string,
   destination: string,
   accessNeeds: AccessNeed[],
   preferences: RoutePreferences = {},
-): Route[] {
-  const matchingRoutes = routes.filter(
-    (route) =>
-      route.origin.toLowerCase() === origin.toLowerCase() &&
-      route.destination.toLowerCase() === destination.toLowerCase(),
+): Promise<Route[]> {
+  const databricksRows = await findDatabricksRoutes(
+    origin,
+    destination,
   );
+
+  const matchingRoutes = (
+    databricksRows as DatabricksRouteRow[]
+  ).map(convertDatabricksRoute);
 
   if (matchingRoutes.length === 0) {
     return [];
   }
 
-  // "No stairs" is treated as a hard requirement.
+  // No stairs is treated as a hard accessibility requirement.
   let viableRoutes = matchingRoutes;
 
   if (accessNeeds.includes("no_stairs")) {
-    viableRoutes = viableRoutes.filter((route) => route.stairs === 0);
+    viableRoutes = viableRoutes.filter(
+      (route) => route.stairs === 0,
+    );
   }
 
   // If no route satisfies the hard requirement,
-  // keep the routes available so the agent can
-  // still provide the closest alternatives.
+  // return the closest alternatives rather than nothing.
   if (viableRoutes.length === 0) {
     return matchingRoutes.sort(
       (a, b) =>
