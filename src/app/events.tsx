@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import {
@@ -9,16 +10,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const COLORS = {
-  maroon: '#861F41',
-  orange: '#E87722',
-  cream: '#FFF8F2',
-  white: '#FFFFFF',
-  text: '#211A1D',
-  secondaryText: '#665B60',
-  border: '#E8DDE1',
-  paleMaroon: '#F8E8EE',
-};
+import {
+    HokieColors,
+    HokieRadius,
+    HokieShadow,
+    HokieSpacing,
+    HokieTypography,
+} from '@/constants/theme';
 
 function getParamValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -67,55 +65,95 @@ export default function EventsScreen() {
               pressed && styles.pressed,
             ]}
           >
-            <Text style={styles.backText}>‹</Text>
+            <Ionicons
+              name="chevron-back"
+              size={24}
+              color={HokieColors.text}
+            />
           </Pressable>
 
-          <Text style={styles.step}>STEP 2 OF 4</Text>
+          <View
+            accessible
+            accessibilityLabel="Step 2 of 4"
+            style={styles.progress}
+          >
+            <View style={[styles.progressBar, styles.progressBarActive]} />
+            <View style={[styles.progressBar, styles.progressBarActive]} />
+            <View style={styles.progressBar} />
+            <View style={styles.progressBar} />
+          </View>
+
+          <Text style={styles.step}>2 OF 4</Text>
         </View>
 
         <View style={styles.introduction}>
           <Text style={styles.eyebrow}>CAMPUS DESTINATION</Text>
-          <Text style={styles.title}>Where are you going today?</Text>
+
+          <Text style={styles.title}>
+            Where are you{'\n'}going today?
+          </Text>
 
           <Text style={styles.description}>
-            Choose a destination and HokieAssist will create a route using
-            your access preferences.
+            Choose a destination and we’ll create a route around your
+            preferences.
           </Text>
         </View>
 
         <View style={styles.preferenceNotice}>
-          <Text style={styles.preferenceIcon}>✨</Text>
+          <View style={styles.preferenceIcon}>
+            <Ionicons
+              name={
+                preferenceCount > 0
+                  ? 'checkmark-circle-outline'
+                  : 'options-outline'
+              }
+              size={21}
+              color={HokieColors.burgundy}
+            />
+          </View>
 
           <View style={styles.preferenceContent}>
             <Text style={styles.preferenceTitle}>
               {preferenceCount > 0
-                ? `${preferenceCount} access ${
-                    preferenceCount === 1 ? 'preference' : 'preferences'
+                ? `${preferenceCount} ${
+                    preferenceCount === 1
+                      ? 'preference'
+                      : 'preferences'
                   } selected`
                 : 'Standard route selected'}
             </Text>
 
             <Text style={styles.preferenceText}>
               {preferenceCount > 0
-                ? 'Your route will prioritize the support you selected.'
-                : 'You can return and add access preferences at any time.'}
+                ? 'Your route will prioritize your selected support.'
+                : 'You can add access preferences at any time.'}
             </Text>
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Featured campus event</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Featured event</Text>
+
+          <Text style={styles.todayLabel}>TODAY</Text>
+        </View>
 
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Create an accessible route to the career fair at Squires Student Center"
+          accessibilityLabel="Create an accessible route to Hokie Career Connections at Squires Student Center"
           onPress={openAccessPlan}
           style={({ pressed }) => [
             styles.eventCard,
             pressed && styles.pressed,
           ]}
         >
-          <View style={styles.eventImage}>
-            <Text style={styles.eventImageIcon}>💼</Text>
+          <View style={styles.eventTop}>
+            <View style={styles.eventIcon}>
+              <Ionicons
+                name="briefcase-outline"
+                size={27}
+                color={HokieColors.surface}
+              />
+            </View>
 
             <View style={styles.liveBadge}>
               <View style={styles.liveDot} />
@@ -126,32 +164,53 @@ export default function EventsScreen() {
           <View style={styles.eventContent}>
             <View style={styles.eventHeading}>
               <View style={styles.eventHeadingText}>
-                <Text style={styles.eventType}>CAREER & PROFESSIONAL</Text>
+                <Text style={styles.eventType}>
+                  CAREER & PROFESSIONAL
+                </Text>
+
                 <Text style={styles.eventTitle}>
                   Hokie Career Connections
                 </Text>
               </View>
 
               <View style={styles.arrowCircle}>
-                <Text style={styles.arrow}>→</Text>
+                <Ionicons
+                  name="arrow-forward"
+                  size={20}
+                  color={HokieColors.burgundy}
+                />
               </View>
             </View>
 
             <View style={styles.eventDetails}>
               <View style={styles.detailRow}>
-                <Text style={styles.detailIcon}>📍</Text>
+                <Ionicons
+                  name="location-outline"
+                  size={18}
+                  color={HokieColors.textSecondary}
+                />
                 <Text style={styles.detailText}>
                   Squires Student Center
                 </Text>
               </View>
 
               <View style={styles.detailRow}>
-                <Text style={styles.detailIcon}>🕐</Text>
-                <Text style={styles.detailText}>1:00 PM–4:00 PM</Text>
+                <Ionicons
+                  name="time-outline"
+                  size={18}
+                  color={HokieColors.textSecondary}
+                />
+                <Text style={styles.detailText}>
+                  1:00 PM–4:00 PM
+                </Text>
               </View>
 
               <View style={styles.detailRow}>
-                <Text style={styles.detailIcon}>🚶</Text>
+                <Ionicons
+                  name="navigate-outline"
+                  size={18}
+                  color={HokieColors.textSecondary}
+                />
                 <Text style={styles.detailText}>
                   Starting from Newman Library
                 </Text>
@@ -160,10 +219,20 @@ export default function EventsScreen() {
 
             <View style={styles.accessibilityTags}>
               <View style={styles.tag}>
+                <Ionicons
+                  name="accessibility-outline"
+                  size={14}
+                  color={HokieColors.burgundy}
+                />
                 <Text style={styles.tagText}>Accessible route</Text>
               </View>
 
               <View style={styles.tag}>
+                <Ionicons
+                  name="radio-outline"
+                  size={14}
+                  color={HokieColors.burgundy}
+                />
                 <Text style={styles.tagText}>Live updates</Text>
               </View>
             </View>
@@ -172,13 +241,24 @@ export default function EventsScreen() {
               <Text style={styles.createPlanText}>
                 Build my access plan
               </Text>
-              <Text style={styles.createPlanArrow}>→</Text>
+
+              <Ionicons
+                name="arrow-forward"
+                size={20}
+                color={HokieColors.surface}
+              />
             </View>
           </View>
         </Pressable>
 
         <View style={styles.comingSoonCard}>
-          <Text style={styles.comingSoonIcon}>🏫</Text>
+          <View style={styles.comingSoonIcon}>
+            <Ionicons
+              name="school-outline"
+              size={22}
+              color={HokieColors.burgundy}
+            />
+          </View>
 
           <View style={styles.comingSoonContent}>
             <Text style={styles.comingSoonTitle}>
@@ -186,8 +266,7 @@ export default function EventsScreen() {
             </Text>
 
             <Text style={styles.comingSoonText}>
-              Future plans can include classrooms, club meetings, dining
-              halls, and additional campus events.
+              Classrooms, club meetings, dining halls, and more.
             </Text>
           </View>
         </View>
@@ -199,134 +278,170 @@ export default function EventsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.cream,
+    backgroundColor: HokieColors.background,
   },
   content: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 42,
+    paddingHorizontal: HokieSpacing.xl,
+    paddingTop: HokieSpacing.sm,
+    paddingBottom: HokieSpacing.section,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
   },
   backButton: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
+    borderRadius: HokieRadius.medium,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
+    backgroundColor: HokieColors.surface,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: HokieColors.border,
   },
-  backText: {
-    color: COLORS.maroon,
-    fontSize: 34,
-    lineHeight: 36,
+  progress: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: 6,
+    marginHorizontal: HokieSpacing.xl,
+  },
+  progressBar: {
+    flex: 1,
+    height: 4,
+    borderRadius: HokieRadius.pill,
+    backgroundColor: HokieColors.border,
+  },
+  progressBarActive: {
+    backgroundColor: HokieColors.burgundy,
   },
   step: {
-    color: COLORS.maroon,
-    fontSize: 12,
+    color: HokieColors.burgundy,
+    fontSize: 11,
     fontWeight: '800',
     letterSpacing: 1,
   },
   introduction: {
-    marginTop: 34,
+    marginTop: HokieSpacing.xxl,
   },
   eyebrow: {
-    color: COLORS.maroon,
-    fontSize: 12,
+    color: HokieColors.burgundy,
+    fontSize: 11,
     fontWeight: '800',
-    letterSpacing: 1.3,
+    letterSpacing: 1.4,
   },
   title: {
-    color: COLORS.text,
-    fontSize: 32,
-    fontWeight: '800',
-    lineHeight: 39,
-    letterSpacing: -0.6,
-    marginTop: 10,
+    color: HokieColors.text,
+    fontFamily: 'serif',
+    fontSize: 34,
+    fontWeight: '700',
+    lineHeight: 37,
+    letterSpacing: -0.8,
+    marginTop: HokieSpacing.sm,
   },
   description: {
-    color: COLORS.secondaryText,
-    fontSize: 16,
-    lineHeight: 24,
-    marginTop: 13,
+    maxWidth: 320,
+    color: HokieColors.textSecondary,
+    fontSize: HokieTypography.label,
+    lineHeight: 20,
+    marginTop: HokieSpacing.md,
   },
   preferenceNotice: {
+    minHeight: 64,
     flexDirection: 'row',
-    backgroundColor: '#F0E8F8',
-    borderRadius: 20,
-    padding: 17,
-    marginTop: 24,
+    alignItems: 'center',
+    backgroundColor: HokieColors.burgundySoft,
+    borderRadius: HokieRadius.medium,
+    padding: HokieSpacing.md,
+    marginTop: HokieSpacing.xl,
   },
   preferenceIcon: {
-    fontSize: 22,
-    marginRight: 12,
+    width: 38,
+    height: 38,
+    borderRadius: HokieRadius.small,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: HokieColors.surface,
+    marginRight: HokieSpacing.md,
   },
   preferenceContent: {
     flex: 1,
   },
   preferenceTitle: {
-    color: COLORS.text,
-    fontSize: 14,
-    fontWeight: '800',
+    color: HokieColors.text,
+    fontSize: HokieTypography.label,
+    fontWeight: '700',
   },
   preferenceText: {
-    color: COLORS.secondaryText,
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: 4,
+    color: HokieColors.textSecondary,
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 3,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: HokieSpacing.xxl,
+    marginBottom: HokieSpacing.md,
   },
   sectionTitle: {
-    color: COLORS.text,
-    fontSize: 19,
+    color: HokieColors.text,
+    fontSize: HokieTypography.subheading,
     fontWeight: '800',
-    marginTop: 30,
-    marginBottom: 14,
+  },
+  todayLabel: {
+    color: HokieColors.burgundy,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1,
   },
   eventCard: {
     overflow: 'hidden',
-    backgroundColor: COLORS.white,
-    borderRadius: 24,
+    backgroundColor: HokieColors.surface,
+    borderRadius: HokieRadius.large,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: HokieColors.border,
+    ...HokieShadow,
   },
-  eventImage: {
-    height: 128,
+  eventTop: {
+    minHeight: 78,
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    backgroundColor: COLORS.maroon,
-    padding: 18,
+    backgroundColor: HokieColors.burgundy,
+    paddingHorizontal: HokieSpacing.lg,
   },
-  eventImageIcon: {
-    fontSize: 38,
+  eventIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: HokieRadius.medium,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.14)',
   },
   liveBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.white,
-    borderRadius: 20,
+    backgroundColor: HokieColors.surface,
+    borderRadius: HokieRadius.pill,
     paddingHorizontal: 11,
     paddingVertical: 7,
   },
   liveDot: {
     width: 7,
     height: 7,
-    backgroundColor: COLORS.orange,
-    borderRadius: 4,
+    borderRadius: HokieRadius.pill,
+    backgroundColor: HokieColors.orange,
     marginRight: 7,
   },
   liveText: {
-    color: COLORS.maroon,
+    color: HokieColors.burgundy,
     fontSize: 9,
-    fontWeight: '900',
+    fontWeight: '800',
     letterSpacing: 0.8,
   },
   eventContent: {
-    padding: 20,
+    padding: HokieSpacing.lg,
   },
   eventHeading: {
     flexDirection: 'row',
@@ -334,118 +449,114 @@ const styles = StyleSheet.create({
   },
   eventHeadingText: {
     flex: 1,
-    paddingRight: 12,
+    paddingRight: HokieSpacing.md,
   },
   eventType: {
-    color: COLORS.orange,
+    color: HokieColors.orange,
     fontSize: 10,
-    fontWeight: '900',
+    fontWeight: '800',
     letterSpacing: 1,
   },
   eventTitle: {
-    color: COLORS.text,
-    fontSize: 22,
-    fontWeight: '900',
-    lineHeight: 28,
-    marginTop: 6,
+    color: HokieColors.text,
+    fontSize: 21,
+    fontWeight: '800',
+    lineHeight: 26,
+    marginTop: 5,
   },
   arrowCircle: {
-    width: 39,
-    height: 39,
+    width: 40,
+    height: 40,
+    borderRadius: HokieRadius.medium,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.paleMaroon,
-    borderRadius: 13,
-  },
-  arrow: {
-    color: COLORS.maroon,
-    fontSize: 20,
-    fontWeight: '900',
+    backgroundColor: HokieColors.burgundySoft,
   },
   eventDetails: {
-    marginTop: 17,
+    gap: 9,
+    marginTop: HokieSpacing.lg,
   },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 9,
-  },
-  detailIcon: {
-    width: 26,
-    fontSize: 16,
   },
   detailText: {
     flex: 1,
-    color: COLORS.secondaryText,
-    fontSize: 14,
-    lineHeight: 20,
+    color: HokieColors.textSecondary,
+    fontSize: HokieTypography.label,
+    lineHeight: 19,
+    marginLeft: 9,
   },
   accessibilityTags: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 18,
+    gap: HokieSpacing.sm,
+    marginTop: HokieSpacing.lg,
   },
   tag: {
-    backgroundColor: COLORS.cream,
-    borderRadius: 20,
-    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: HokieColors.background,
+    borderRadius: HokieRadius.pill,
+    paddingHorizontal: 11,
     paddingVertical: 7,
   },
   tagText: {
-    color: COLORS.maroon,
+    color: HokieColors.burgundy,
     fontSize: 11,
-    fontWeight: '800',
+    fontWeight: '700',
+    marginLeft: 5,
   },
   createPlanButton: {
     minHeight: 52,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.maroon,
-    borderRadius: 16,
-    marginTop: 20,
+    gap: HokieSpacing.sm,
+    backgroundColor: HokieColors.burgundy,
+    borderRadius: HokieRadius.pill,
+    marginTop: HokieSpacing.xl,
   },
   createPlanText: {
-    color: COLORS.white,
-    fontSize: 15,
+    color: HokieColors.surface,
+    fontSize: HokieTypography.label,
     fontWeight: '800',
-  },
-  createPlanArrow: {
-    color: COLORS.orange,
-    fontSize: 20,
-    fontWeight: '900',
-    marginLeft: 9,
   },
   comingSoonCard: {
     flexDirection: 'row',
-    backgroundColor: COLORS.white,
-    borderRadius: 20,
+    alignItems: 'center',
+    backgroundColor: HokieColors.surface,
+    borderRadius: HokieRadius.medium,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: 17,
-    marginTop: 18,
+    borderColor: HokieColors.border,
+    padding: HokieSpacing.lg,
+    marginTop: HokieSpacing.lg,
   },
   comingSoonIcon: {
-    fontSize: 24,
-    marginRight: 13,
+    width: 42,
+    height: 42,
+    borderRadius: HokieRadius.medium,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: HokieColors.burgundySoft,
+    marginRight: HokieSpacing.md,
   },
   comingSoonContent: {
     flex: 1,
   },
   comingSoonTitle: {
-    color: COLORS.text,
-    fontSize: 14,
-    fontWeight: '800',
+    color: HokieColors.text,
+    fontSize: HokieTypography.label,
+    fontWeight: '700',
   },
   comingSoonText: {
-    color: COLORS.secondaryText,
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: 5,
+    color: HokieColors.textSecondary,
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 4,
   },
   pressed: {
-    opacity: 0.82,
-    transform: [{ scale: 0.99 }],
+    opacity: 0.78,
+    transform: [{ scale: 0.98 }],
   },
 });

@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -9,6 +10,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import {
+    HokieColors,
+    HokieRadius,
+    HokieShadow,
+    HokieSpacing,
+    HokieTypography,
+} from '@/constants/theme';
 import buildingsData from '../../data/buildings.json';
 import conditionsData from '../../data/conditions.json';
 import eventsData from '../../data/events.json';
@@ -49,20 +57,6 @@ type CampusBuilding = {
   quiet_spaces: boolean;
   water: boolean;
   accessibility_features: string[];
-};
-
-const COLORS = {
-  maroon: '#861F41',
-  orange: '#E87722',
-  cream: '#FFF8F2',
-  white: '#FFFFFF',
-  text: '#211A1D',
-  secondaryText: '#665B60',
-  border: '#E8DDE1',
-  paleMaroon: '#F8E8EE',
-  paleOrange: '#FFF0E4',
-  warning: '#9A5A00',
-  warningBackground: '#FFF4D8',
 };
 
 function formatTime(time: string) {
@@ -109,16 +103,28 @@ export default function LiveEventScreen() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorIcon}>📍</Text>
+          <View style={styles.errorIcon}>
+            <Ionicons
+              name="location-outline"
+              size={28}
+              color={HokieColors.burgundy}
+            />
+          </View>
+
           <Text style={styles.errorTitle}>Event data unavailable</Text>
+
           <Text style={styles.errorText}>
             HokieAssist could not load the current campus information.
           </Text>
 
           <Pressable
             accessibilityRole="button"
+            accessibilityLabel="Go back"
             onPress={() => router.back()}
-            style={styles.primaryButton}
+            style={({ pressed }) => [
+              styles.primaryButton,
+              pressed && styles.pressed,
+            ]}
           >
             <Text style={styles.primaryButtonText}>Go back</Text>
           </Pressable>
@@ -143,7 +149,11 @@ export default function LiveEventScreen() {
               pressed && styles.pressed,
             ]}
           >
-            <Text style={styles.backText}>‹</Text>
+            <Ionicons
+              name="chevron-back"
+              size={24}
+              color={HokieColors.text}
+            />
           </Pressable>
 
           <View style={styles.liveIndicator}>
@@ -156,17 +166,27 @@ export default function LiveEventScreen() {
           <Text style={styles.eyebrow}>ACCESS LIVE</Text>
           <Text style={styles.title}>{currentEvent.name}</Text>
 
-          <Text style={styles.description}>
-            {currentEvent.building} · {currentEvent.room}
-          </Text>
+          <View style={styles.eventLocation}>
+            <Ionicons
+              name="location-outline"
+              size={17}
+              color={HokieColors.textSecondary}
+            />
+
+            <Text style={styles.description}>
+              {currentEvent.building} · {currentEvent.room}
+            </Text>
+          </View>
         </View>
 
         <View style={styles.timelineCard}>
           <View style={styles.timelineSection}>
             <Text style={styles.timelineLabel}>NOW</Text>
+
             <Text style={styles.timelineTitle}>
               Employer introductions and networking
             </Text>
+
             <Text style={styles.timelineTime}>
               {formatTime(currentEvent.start_time)}–
               {formatTime(currentEvent.end_time)}
@@ -178,6 +198,7 @@ export default function LiveEventScreen() {
           <View style={styles.timelineSection}>
             <Text style={styles.nextLabel}>NEXT</Text>
             <Text style={styles.timelineTitle}>{nextEvent.name}</Text>
+
             <Text style={styles.timelineTime}>
               Room {nextEvent.room} · {formatTime(nextEvent.start_time)}
             </Text>
@@ -188,24 +209,42 @@ export default function LiveEventScreen() {
 
         <View style={styles.environmentGrid}>
           <View style={styles.environmentCard}>
-            <Text style={styles.environmentIcon}>👥</Text>
+            <Ionicons
+              name="people-outline"
+              size={23}
+              color={HokieColors.burgundy}
+            />
+
             <Text style={styles.environmentLabel}>Crowd</Text>
+
             <Text style={styles.environmentValue}>
               {latestCondition.crowd_level}
             </Text>
           </View>
 
           <View style={styles.environmentCard}>
-            <Text style={styles.environmentIcon}>🔊</Text>
+            <Ionicons
+              name="volume-high-outline"
+              size={23}
+              color={HokieColors.burgundy}
+            />
+
             <Text style={styles.environmentLabel}>Noise</Text>
+
             <Text style={styles.environmentValue}>
               {latestCondition.noise_level}
             </Text>
           </View>
 
           <View style={styles.environmentCard}>
-            <Text style={styles.environmentIcon}>🌡️</Text>
+            <Ionicons
+              name="thermometer-outline"
+              size={23}
+              color={HokieColors.burgundy}
+            />
+
             <Text style={styles.environmentLabel}>Temperature</Text>
+
             <Text style={styles.environmentValue}>
               {latestCondition.temperature_f}°F
             </Text>
@@ -214,15 +253,23 @@ export default function LiveEventScreen() {
 
         {blockedCondition && (
           <View style={styles.warningCard}>
-            <Text style={styles.warningIcon}>⚠️</Text>
+            <View style={styles.warningIcon}>
+              <Ionicons
+                name="warning-outline"
+                size={22}
+                color={HokieColors.warning}
+              />
+            </View>
 
             <View style={styles.warningContent}>
               <Text style={styles.warningTitle}>Route update</Text>
+
               <Text style={styles.warningText}>
                 {blockedCondition.message}
               </Text>
+
               <Text style={styles.warningAction}>
-                HokieAssist recommends using an alternate elevator.
+                Use the alternate elevator near the ballroom entrance.
               </Text>
             </View>
           </View>
@@ -234,14 +281,24 @@ export default function LiveEventScreen() {
           <View style={styles.features}>
             {building.accessibility_features.map((feature) => (
               <View key={feature} style={styles.feature}>
-                <Text style={styles.featureCheck}>✓</Text>
+                <Ionicons
+                  name="checkmark"
+                  size={14}
+                  color={HokieColors.burgundy}
+                />
+
                 <Text style={styles.featureText}>{feature}</Text>
               </View>
             ))}
 
             {building.quiet_spaces && (
               <View style={styles.feature}>
-                <Text style={styles.featureCheck}>✓</Text>
+                <Ionicons
+                  name="checkmark"
+                  size={14}
+                  color={HokieColors.burgundy}
+                />
+
                 <Text style={styles.featureText}>quiet spaces</Text>
               </View>
             )}
@@ -259,21 +316,32 @@ export default function LiveEventScreen() {
           ]}
         >
           <View style={styles.missedButtonIcon}>
-            <Text style={styles.missedButtonEmoji}>✨</Text>
+            <Ionicons
+              name="time-outline"
+              size={23}
+              color={HokieColors.burgundy}
+            />
           </View>
 
           <View style={styles.missedButtonContent}>
             <Text style={styles.missedButtonTitle}>
               What did I miss?
             </Text>
+
             <Text style={styles.missedButtonText}>
-              Get a quick accessible summary after taking a break.
+              Get an accessible summary after taking a break.
             </Text>
           </View>
 
-          <Text style={styles.missedButtonArrow}>
-            {showMissedUpdates ? '⌃' : '⌄'}
-          </Text>
+          <Ionicons
+            name={
+              showMissedUpdates
+                ? 'chevron-up-outline'
+                : 'chevron-down-outline'
+            }
+            size={21}
+            color={HokieColors.orange}
+          />
         </Pressable>
 
         {showMissedUpdates && (
@@ -291,9 +359,10 @@ export default function LiveEventScreen() {
                 <Text style={styles.updateTitle}>
                   Networking has started
                 </Text>
+
                 <Text style={styles.updateText}>
-                  Employer introductions are complete and open networking is
-                  now underway.
+                  Employer introductions are complete and open networking
+                  is now underway.
                 </Text>
               </View>
             </View>
@@ -307,9 +376,10 @@ export default function LiveEventScreen() {
                 <Text style={styles.updateTitle}>
                   Elevator route changed
                 </Text>
+
                 <Text style={styles.updateText}>
-                  The elevator on your original route is unavailable. Use the
-                  alternate elevator near the ballroom entrance.
+                  The original elevator is unavailable. Use the alternate
+                  elevator near the ballroom entrance.
                 </Text>
               </View>
             </View>
@@ -323,9 +393,10 @@ export default function LiveEventScreen() {
                 <Text style={styles.updateTitle}>
                   Résumé workshop begins soon
                 </Text>
+
                 <Text style={styles.updateText}>
-                  The workshop starts at {formatTime(nextEvent.start_time)} in
-                  Room {nextEvent.room}. Seating is available nearby.
+                  The workshop starts at {formatTime(nextEvent.start_time)}
+                  {' '}in Room {nextEvent.room}. Seating is available nearby.
                 </Text>
               </View>
             </View>
@@ -334,24 +405,32 @@ export default function LiveEventScreen() {
               <Text style={styles.nextActionLabel}>
                 RECOMMENDED NEXT ACTION
               </Text>
+
               <Text style={styles.nextActionText}>
-                Continue networking, then take a seated break before going to
-                Room {nextEvent.room}.
+                Continue networking, then take a seated break before going
+                to Room {nextEvent.room}.
               </Text>
             </View>
           </View>
         )}
 
         <View style={styles.dataNotice}>
-          <Text style={styles.dataNoticeIcon}>📊</Text>
+          <View style={styles.dataNoticeIcon}>
+            <Ionicons
+              name="analytics-outline"
+              size={21}
+              color={HokieColors.burgundy}
+            />
+          </View>
 
           <View style={styles.dataNoticeContent}>
             <Text style={styles.dataNoticeTitle}>
               Powered by campus intelligence
             </Text>
+
             <Text style={styles.dataNoticeText}>
-              HokieAssist combines event schedules, building accessibility,
-              and live campus conditions to adapt your experience.
+              Event schedules, building accessibility, and live campus
+              conditions work together to adapt your experience.
             </Text>
           </View>
         </View>
@@ -360,7 +439,10 @@ export default function LiveEventScreen() {
           accessibilityRole="button"
           accessibilityLabel="Return to home"
           onPress={() => router.replace('/')}
-          style={styles.homeButton}
+          style={({ pressed }) => [
+            styles.homeButton,
+            pressed && styles.pressed,
+          ]}
         >
           <Text style={styles.homeButtonText}>Return home</Text>
         </Pressable>
@@ -372,12 +454,12 @@ export default function LiveEventScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.cream,
+    backgroundColor: HokieColors.background,
   },
   content: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 42,
+    paddingHorizontal: HokieSpacing.xl,
+    paddingTop: HokieSpacing.sm,
+    paddingBottom: HokieSpacing.section,
   },
   header: {
     flexDirection: 'row',
@@ -385,235 +467,233 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   backButton: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
+    borderRadius: HokieRadius.medium,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
+    backgroundColor: HokieColors.surface,
     borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  backText: {
-    color: COLORS.maroon,
-    fontSize: 34,
-    lineHeight: 36,
+    borderColor: HokieColors.border,
   },
   liveIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.paleMaroon,
-    borderRadius: 20,
-    paddingHorizontal: 13,
-    paddingVertical: 9,
+    backgroundColor: HokieColors.burgundySoft,
+    borderRadius: HokieRadius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   liveDot: {
-    width: 8,
-    height: 8,
-    backgroundColor: COLORS.orange,
-    borderRadius: 4,
+    width: 7,
+    height: 7,
+    borderRadius: HokieRadius.pill,
+    backgroundColor: HokieColors.orange,
     marginRight: 7,
   },
   liveIndicatorText: {
-    color: COLORS.maroon,
+    color: HokieColors.burgundy,
     fontSize: 11,
-    fontWeight: '900',
+    fontWeight: '800',
     letterSpacing: 1,
   },
   introduction: {
-    marginTop: 32,
+    marginTop: HokieSpacing.xxl,
   },
   eyebrow: {
-    color: COLORS.maroon,
-    fontSize: 12,
+    color: HokieColors.burgundy,
+    fontSize: 11,
     fontWeight: '800',
-    letterSpacing: 1.3,
+    letterSpacing: 1.4,
   },
   title: {
-    color: COLORS.text,
+    color: HokieColors.text,
+    fontFamily: 'serif',
     fontSize: 31,
-    fontWeight: '900',
-    lineHeight: 38,
-    marginTop: 10,
+    fontWeight: '700',
+    lineHeight: 35,
+    letterSpacing: -0.7,
+    marginTop: HokieSpacing.sm,
+  },
+  eventLocation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: HokieSpacing.sm,
   },
   description: {
-    color: COLORS.secondaryText,
-    fontSize: 15,
-    lineHeight: 22,
-    marginTop: 9,
+    color: HokieColors.textSecondary,
+    fontSize: HokieTypography.label,
+    lineHeight: 20,
+    marginLeft: 5,
   },
   timelineCard: {
-    backgroundColor: COLORS.maroon,
-    borderRadius: 24,
-    padding: 20,
-    marginTop: 24,
+    backgroundColor: HokieColors.burgundy,
+    borderRadius: HokieRadius.large,
+    padding: HokieSpacing.lg,
+    marginTop: HokieSpacing.xl,
+    ...HokieShadow,
   },
   timelineSection: {
-    paddingVertical: 3,
+    paddingVertical: 2,
   },
   timelineLabel: {
-    color: COLORS.orange,
-    fontSize: 11,
-    fontWeight: '900',
+    color: HokieColors.orange,
+    fontSize: 10,
+    fontWeight: '800',
     letterSpacing: 1.2,
   },
   nextLabel: {
     color: '#F5CDD9',
-    fontSize: 11,
-    fontWeight: '900',
+    fontSize: 10,
+    fontWeight: '800',
     letterSpacing: 1.2,
   },
   timelineTitle: {
-    color: COLORS.white,
-    fontSize: 17,
-    fontWeight: '800',
-    lineHeight: 23,
-    marginTop: 7,
+    color: HokieColors.surface,
+    fontSize: HokieTypography.body,
+    fontWeight: '700',
+    lineHeight: 21,
+    marginTop: 5,
   },
   timelineTime: {
     color: '#F5CDD9',
-    fontSize: 13,
-    marginTop: 5,
+    fontSize: 12,
+    marginTop: 4,
   },
   timelineDivider: {
     height: 1,
     backgroundColor: '#A94C6B',
-    marginVertical: 17,
+    marginVertical: HokieSpacing.md,
   },
   sectionTitle: {
-    color: COLORS.text,
-    fontSize: 19,
+    color: HokieColors.text,
+    fontSize: HokieTypography.subheading,
     fontWeight: '800',
-    marginTop: 28,
-    marginBottom: 13,
+    marginTop: HokieSpacing.xxl,
+    marginBottom: HokieSpacing.md,
   },
   environmentGrid: {
     flexDirection: 'row',
-    gap: 10,
+    gap: HokieSpacing.sm,
   },
   environmentCard: {
     flex: 1,
+    minHeight: 104,
     alignItems: 'center',
-    backgroundColor: COLORS.white,
-    borderRadius: 18,
+    justifyContent: 'center',
+    backgroundColor: HokieColors.surface,
+    borderRadius: HokieRadius.medium,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    paddingHorizontal: 8,
-    paddingVertical: 15,
-  },
-  environmentIcon: {
-    fontSize: 22,
+    borderColor: HokieColors.border,
+    padding: HokieSpacing.sm,
   },
   environmentLabel: {
-    color: COLORS.secondaryText,
+    color: HokieColors.textSecondary,
     fontSize: 11,
-    marginTop: 8,
+    marginTop: 7,
   },
   environmentValue: {
-    color: COLORS.text,
-    fontSize: 14,
+    color: HokieColors.text,
+    fontSize: HokieTypography.label,
     fontWeight: '800',
     textTransform: 'capitalize',
-    marginTop: 3,
+    marginTop: 2,
   },
   warningCard: {
     flexDirection: 'row',
-    backgroundColor: COLORS.warningBackground,
-    borderRadius: 20,
-    padding: 17,
-    marginTop: 16,
+    backgroundColor: HokieColors.warningSoft,
+    borderRadius: HokieRadius.large,
+    padding: HokieSpacing.lg,
+    marginTop: HokieSpacing.lg,
   },
   warningIcon: {
-    fontSize: 21,
-    marginRight: 11,
+    width: 40,
+    height: 40,
+    borderRadius: HokieRadius.medium,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: HokieColors.surface,
+    marginRight: HokieSpacing.md,
   },
   warningContent: {
     flex: 1,
   },
   warningTitle: {
-    color: COLORS.warning,
-    fontSize: 15,
-    fontWeight: '900',
+    color: HokieColors.warning,
+    fontSize: HokieTypography.label,
+    fontWeight: '800',
   },
   warningText: {
-    color: COLORS.warning,
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: 5,
+    color: HokieColors.warning,
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 4,
   },
   warningAction: {
-    color: COLORS.warning,
-    fontSize: 13,
-    fontWeight: '800',
-    lineHeight: 19,
-    marginTop: 7,
+    color: HokieColors.warning,
+    fontSize: 12,
+    fontWeight: '700',
+    lineHeight: 18,
+    marginTop: 6,
   },
   accessCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: 22,
+    backgroundColor: HokieColors.surface,
+    borderRadius: HokieRadius.large,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: 19,
-    marginTop: 16,
+    borderColor: HokieColors.border,
+    padding: HokieSpacing.lg,
+    marginTop: HokieSpacing.lg,
   },
   accessTitle: {
-    color: COLORS.text,
-    fontSize: 17,
+    color: HokieColors.text,
+    fontSize: HokieTypography.subheading,
     fontWeight: '800',
   },
   features: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 9,
-    marginTop: 15,
+    gap: HokieSpacing.sm,
+    marginTop: HokieSpacing.md,
   },
   feature: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.cream,
-    borderRadius: 20,
-    paddingHorizontal: 11,
-    paddingVertical: 8,
-  },
-  featureCheck: {
-    color: COLORS.maroon,
-    fontSize: 12,
-    fontWeight: '900',
-    marginRight: 6,
+    backgroundColor: HokieColors.background,
+    borderRadius: HokieRadius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
   },
   featureText: {
-    color: COLORS.text,
-    fontSize: 12,
-    fontWeight: '700',
+    color: HokieColors.text,
+    fontSize: 11,
+    fontWeight: '600',
     textTransform: 'capitalize',
+    marginLeft: 5,
   },
   missedButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.maroon,
-    borderRadius: 22,
-    padding: 17,
-    marginTop: 22,
+    backgroundColor: HokieColors.burgundy,
+    borderRadius: HokieRadius.large,
+    padding: HokieSpacing.lg,
+    marginTop: HokieSpacing.xl,
   },
   missedButtonIcon: {
-    width: 45,
-    height: 45,
+    width: 44,
+    height: 44,
+    borderRadius: HokieRadius.medium,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.white,
-    borderRadius: 14,
-  },
-  missedButtonEmoji: {
-    fontSize: 21,
+    backgroundColor: HokieColors.surface,
   },
   missedButtonContent: {
     flex: 1,
-    marginLeft: 13,
+    marginHorizontal: HokieSpacing.md,
   },
   missedButtonTitle: {
-    color: COLORS.white,
-    fontSize: 17,
-    fontWeight: '900',
+    color: HokieColors.surface,
+    fontSize: HokieTypography.body,
+    fontWeight: '800',
   },
   missedButtonText: {
     color: '#F5CDD9',
@@ -621,156 +701,160 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     marginTop: 3,
   },
-  missedButtonArrow: {
-    color: COLORS.orange,
-    fontSize: 22,
-    fontWeight: '900',
-    marginLeft: 8,
-  },
   missedCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: 22,
+    backgroundColor: HokieColors.surface,
+    borderRadius: HokieRadius.large,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: 19,
-    marginTop: 12,
+    borderColor: HokieColors.border,
+    padding: HokieSpacing.lg,
+    marginTop: HokieSpacing.md,
   },
   missedEyebrow: {
-    color: COLORS.maroon,
-    fontSize: 11,
-    fontWeight: '900',
+    color: HokieColors.burgundy,
+    fontSize: 10,
+    fontWeight: '800',
     letterSpacing: 1.1,
-    marginBottom: 5,
   },
   updateRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginTop: 17,
+    marginTop: HokieSpacing.lg,
   },
   updateNumber: {
-    width: 29,
-    height: 29,
+    width: 28,
+    height: 28,
+    borderRadius: HokieRadius.small,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.paleOrange,
-    borderRadius: 9,
+    backgroundColor: HokieColors.warningSoft,
   },
   updateNumberText: {
-    color: COLORS.orange,
-    fontSize: 13,
-    fontWeight: '900',
+    color: HokieColors.orange,
+    fontSize: 12,
+    fontWeight: '800',
   },
   updateContent: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: HokieSpacing.md,
   },
   updateTitle: {
-    color: COLORS.text,
-    fontSize: 14,
-    fontWeight: '800',
+    color: HokieColors.text,
+    fontSize: HokieTypography.label,
+    fontWeight: '700',
   },
   updateText: {
-    color: COLORS.secondaryText,
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: 4,
+    color: HokieColors.textSecondary,
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 3,
   },
   nextAction: {
-    backgroundColor: '#F0E8F8',
-    borderRadius: 17,
-    padding: 15,
-    marginTop: 19,
+    backgroundColor: HokieColors.burgundySoft,
+    borderRadius: HokieRadius.medium,
+    padding: HokieSpacing.md,
+    marginTop: HokieSpacing.lg,
   },
   nextActionLabel: {
-    color: COLORS.maroon,
-    fontSize: 10,
-    fontWeight: '900',
+    color: HokieColors.burgundy,
+    fontSize: 9,
+    fontWeight: '800',
     letterSpacing: 1,
   },
   nextActionText: {
-    color: COLORS.text,
-    fontSize: 13,
-    fontWeight: '700',
-    lineHeight: 19,
-    marginTop: 6,
+    color: HokieColors.text,
+    fontSize: 12,
+    fontWeight: '600',
+    lineHeight: 18,
+    marginTop: 5,
   },
   dataNotice: {
     flexDirection: 'row',
-    backgroundColor: COLORS.white,
-    borderRadius: 20,
+    alignItems: 'center',
+    backgroundColor: HokieColors.surface,
+    borderRadius: HokieRadius.medium,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: 17,
-    marginTop: 18,
+    borderColor: HokieColors.border,
+    padding: HokieSpacing.md,
+    marginTop: HokieSpacing.lg,
   },
   dataNoticeIcon: {
-    fontSize: 22,
-    marginRight: 12,
+    width: 40,
+    height: 40,
+    borderRadius: HokieRadius.medium,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: HokieColors.burgundySoft,
+    marginRight: HokieSpacing.md,
   },
   dataNoticeContent: {
     flex: 1,
   },
   dataNoticeTitle: {
-    color: COLORS.text,
-    fontSize: 14,
-    fontWeight: '800',
+    color: HokieColors.text,
+    fontSize: HokieTypography.label,
+    fontWeight: '700',
   },
   dataNoticeText: {
-    color: COLORS.secondaryText,
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: 5,
+    color: HokieColors.textSecondary,
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 3,
   },
   primaryButton: {
-    minHeight: 54,
+    minHeight: 52,
+    alignSelf: 'stretch',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.maroon,
-    borderRadius: 17,
-    alignSelf: 'stretch',
-    marginTop: 22,
+    backgroundColor: HokieColors.burgundy,
+    borderRadius: HokieRadius.pill,
+    marginTop: HokieSpacing.xl,
   },
   primaryButtonText: {
-    color: COLORS.white,
-    fontSize: 15,
+    color: HokieColors.surface,
+    fontSize: HokieTypography.label,
     fontWeight: '800',
   },
   homeButton: {
-    minHeight: 50,
+    minHeight: 48,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 12,
+    marginTop: HokieSpacing.md,
   },
   homeButtonText: {
-    color: COLORS.maroon,
-    fontSize: 14,
-    fontWeight: '700',
+    color: HokieColors.burgundy,
+    fontSize: HokieTypography.label,
+    fontWeight: '600',
     textDecorationLine: 'underline',
   },
   errorContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 28,
+    padding: HokieSpacing.section,
   },
   errorIcon: {
-    fontSize: 38,
+    width: 54,
+    height: 54,
+    borderRadius: HokieRadius.medium,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: HokieColors.burgundySoft,
   },
   errorTitle: {
-    color: COLORS.text,
-    fontSize: 21,
-    fontWeight: '900',
-    marginTop: 14,
+    color: HokieColors.text,
+    fontSize: HokieTypography.subheading,
+    fontWeight: '800',
+    marginTop: HokieSpacing.md,
   },
   errorText: {
-    color: COLORS.secondaryText,
-    fontSize: 14,
-    lineHeight: 21,
+    color: HokieColors.textSecondary,
+    fontSize: HokieTypography.label,
+    lineHeight: 20,
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: HokieSpacing.sm,
   },
   pressed: {
-    opacity: 0.82,
-    transform: [{ scale: 0.99 }],
+    opacity: 0.78,
+    transform: [{ scale: 0.98 }],
   },
 });

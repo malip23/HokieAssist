@@ -63,3 +63,61 @@ export const Spacing = {
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
+
+// HokieAssist visual identity
+export const HokieColors = {
+  background: '#FFF8F2',
+  surface: '#FFFFFF',
+  burgundy: '#861F41',
+  burgundyDark: '#641530',
+  burgundySoft: '#F6E8ED',
+  blush: '#FBEFF1',
+  orange: '#E87722',
+  text: '#211A1D',
+  textSecondary: '#665B60',
+  textMuted: '#8C8387',
+  border: '#E8DDE1',
+  inactive: '#8C8890',
+  success: '#3F6B5A',
+  successSoft: '#EAF3EE',
+  warning: '#9A5A23',
+  warningSoft: '#FFF1E5',
+} as const;
+
+export const HokieSpacing = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  xxl: 24,
+  section: 32,
+} as const;
+
+export const HokieRadius = {
+  small: 10,
+  medium: 16,
+  large: 22,
+  pill: 999,
+} as const;
+
+export const HokieTypography = {
+  display: 36,
+  title: 28,
+  heading: 22,
+  subheading: 18,
+  body: 16,
+  label: 14,
+  caption: 12,
+} as const;
+
+export const HokieShadow = {
+  shadowColor: '#3B2029',
+  shadowOffset: {
+    width: 0,
+    height: 4,
+  },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  elevation: 3,
+} as const;
