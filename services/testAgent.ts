@@ -1,5 +1,6 @@
 import { runHokieAgent } from "./agent";
 import { parseStudentRequestWithAI } from "./aiParser";
+import { createFocusNarration } from "./focusMode";
 import { parseStudentRequest } from "./requestParser";
 
 // =====================================================
@@ -98,3 +99,53 @@ parseStudentRequestWithAI(aiMessage)
     console.error("AI agent test failed:");
     console.error(error);
   });
+
+// =====================================================
+// TEST 8: PERSONALIZED ROUTE SCORING
+// =====================================================
+
+console.log("\n===== PERSONALIZED ROUTE SCORING =====");
+
+const normalRequest = runHokieAgent({
+  message: "I'm going from Newman Library to Squires Student Center.",
+  origin: "Newman Library",
+  destination: "Squires Student Center",
+  accessNeeds: [],
+});
+
+console.log("\nNORMAL STUDENT:");
+console.log(normalRequest.route);
+
+const tiredRequest = runHokieAgent({
+  message:
+    "I'm exhausted and need to get from Newman Library to Squires Student Center.",
+  origin: "Newman Library",
+  destination: "Squires Student Center",
+  accessNeeds: ["seating"],
+  energyLevel: "low",
+});
+
+console.log("\nLOW ENERGY STUDENT:");
+console.log(tiredRequest.route);
+
+const rushedRequest = runHokieAgent({
+  message:
+    "I'm running late and need to get from Newman Library to Squires Student Center.",
+  origin: "Newman Library",
+  destination: "Squires Student Center",
+  accessNeeds: [],
+  urgency: "high",
+});
+
+console.log("\nURGENT STUDENT:");
+console.log(rushedRequest.route);
+
+// =====================================================
+// TEST 9: FOCUS MODE
+// =====================================================
+
+console.log("\n===== FOCUS MODE =====");
+
+const focusSteps = createFocusNarration(normalRequest);
+
+console.log(focusSteps);

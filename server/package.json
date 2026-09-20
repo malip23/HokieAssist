@@ -13,9 +13,13 @@
   "dependencies": {
     "@databricks/sql": "^2.1.0",
     "@elevenlabs/elevenlabs-js": "^2.68.0",
-    "dotenv": "^18.0.1"
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.1",
+    "express": "^5.2.1"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/node": "^26.6.2",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2"
