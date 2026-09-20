@@ -19,6 +19,10 @@ export async function runHokieAgent(
     request.origin,
     request.destination,
     request.accessNeeds,
+    {
+      energyLevel: request.energyLevel,
+      urgency: request.urgency,
+    },
   );
 
   if (routes.length === 0) {
