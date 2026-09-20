@@ -1,5 +1,12 @@
+import { Ionicons } from '@expo/vector-icons';
+import {
+    useAudioPlayer,
+    useAudioPlayerStatus,
+} from 'expo-audio';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo } from 'react';
+import * as Speech from 'expo-speech';
+import { useEffect, useMemo, useState } from 'react';
+
 import {
     Pressable,
     ScrollView,
@@ -9,22 +16,20 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import {
+    HokieColors,
+    HokieRadius,
+    HokieShadow,
+    HokieSpacing,
+    HokieTypography,
+} from '@/constants/theme';
 import { runHokieAgent } from '../../services/agent';
-import type { AccessNeed } from '../../services/types';
-
-const COLORS = {
-    maroon: '#861F41',
-    orange: '#E87722',
-    cream: '#FFF8F2',
-    white: '#FFFFFF',
-    text: '#211A1D',
-    secondaryText: '#665B60',
-    border: '#E8DDE1',
-    paleMaroon: '#F8E8EE',
-    paleOrange: '#FFF0E4',
-    warning: '#9A5A00',
-    warningBackground: '#FFF4D8',
-};
+import { createFocusNarration } from '../../services/focusMode';
+import { createFocusSpeechFile } from '../../services/speech';
+import type {
+    AccessNeed,
+    AccessPlan,
+} from '../../services/types';
 
 function parseAccessNeeds(
     value: string | string[] | undefined,
@@ -54,19 +59,160 @@ export default function AccessPlanScreen() {
         [params.accessNeeds],
     );
 
-    const plan = useMemo(
-        () =>
-            runHokieAgent({
-                message:
-                    'Create an accessible route from Newman Library to Squires Student Center.',
-                origin: 'Newman Library',
-                destination: 'Squires Student Center',
-                accessNeeds: selectedNeeds,
-                urgency: 'normal',
-                energyLevel: 'moderate',
-            }),
-        [selectedNeeds],
+    const [plan, setPlan] = useState<AccessPlan>({
+        summary: 'Checking campus routes against your preferences.',
+        steps: [],
+        accommodations: [],
+        warnings: [],
+    });
+
+    const [isLoading, setIsLoading] = useState(true);
+
+    const player = useAudioPlayer(null);
+    const playerStatus = useAudioPlayerStatus(player);
+
+    const [isPreparingAudio, setIsPreparingAudio] =
+        useState(false);
+    const [audioUri, setAudioUri] = useState<string | null>(
+        null,
     );
+    const [audioError, setAudioError] = useState<string | null>(
+        null,
+    );
+    const [isDeviceSpeaking, setIsDeviceSpeaking] =
+        useState(false);
+
+    const isNarrating =
+        playerStatus.playing || isDeviceSpeaking;
+
+    const narrationText = useMemo(
+        () =>
+            createFocusNarration(plan)
+                .map((step) => step.text)
+                .join(' '),
+        [plan],
+    );
+
+    useEffect(() => {
+        let isActive = true;
+
+        async function loadAccessPlan() {
+            setIsLoading(true);
+
+            try {
+                const nextPlan = await runHokieAgent({
+                    message:
+                        'Create an accessible route from Newman Library to Squires Student Center.',
+                    origin: 'Newman Library',
+                    destination: 'Squires Student Center',
+                    accessNeeds: selectedNeeds,
+                    urgency: 'normal',
+                    energyLevel: 'moderate',
+                });
+
+                if (isActive) {
+                    setPlan(nextPlan);
+                }
+            } catch (error) {
+                console.error('Failed to create access plan:', error);
+
+                if (isActive) {
+                    setPlan({
+                        summary:
+                            "HokieAssist couldn't create your access plan right now.",
+                        steps: [],
+                        accommodations: [],
+                        warnings: [],
+                    });
+                }
+            } finally {
+                if (isActive) {
+                    setIsLoading(false);
+                }
+            }
+        }
+
+        void loadAccessPlan();
+
+        return () => {
+            isActive = false;
+        };
+    }, [selectedNeeds]);
+
+    async function handleListenToRoute() {
+        if (isNarrating) {
+            if (playerStatus.playing) {
+                player.pause();
+            }
+
+            if (isDeviceSpeaking) {
+                await Speech.stop();
+                setIsDeviceSpeaking(false);
+            }
+
+            return;
+        }
+
+        if (audioUri) {
+            player.play();
+            return;
+        }
+
+        if (!narrationText) {
+            setAudioError(
+                'A route is needed before voice guidance can begin.',
+            );
+            return;
+        }
+
+        setIsPreparingAudio(true);
+        setAudioError(null);
+
+        try {
+            const nextAudioUri =
+                await createFocusSpeechFile(narrationText);
+
+            setAudioUri(nextAudioUri);
+            player.replace(nextAudioUri);
+            player.play();
+        } catch (error) {
+            console.warn(
+                'Enhanced route narration unavailable. Using device voice:',
+                error,
+            );
+
+            setAudioUri(null);
+            setAudioError(
+                "Using this device's voice while enhanced voice guidance is unavailable.",
+            );
+            setIsDeviceSpeaking(true);
+
+            Speech.speak(narrationText, {
+                language: 'en-US',
+                rate: 0.92,
+                pitch: 1,
+                onDone: () => {
+                    setIsDeviceSpeaking(false);
+                },
+                onStopped: () => {
+                    setIsDeviceSpeaking(false);
+                },
+                onError: (speechError) => {
+                    console.warn(
+                        'Device narration failed:',
+                        speechError,
+                    );
+
+                    setIsDeviceSpeaking(false);
+                    setAudioError(
+                        "Voice guidance isn't available right now. You can still follow the written route.",
+                    );
+                },
+            });
+        } finally {
+            setIsPreparingAudio(false);
+        }
+    }
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -84,31 +230,69 @@ export default function AccessPlanScreen() {
                             pressed && styles.pressed,
                         ]}
                     >
-                        <Text style={styles.backText}>‹</Text>
+                        <Ionicons
+                            name="chevron-back"
+                            size={24}
+                            color={HokieColors.text}
+                        />
                     </Pressable>
 
-                    <Text style={styles.step}>STEP 3 OF 4</Text>
+                    <View
+                        accessible
+                        accessibilityLabel="Step 3 of 4"
+                        style={styles.progress}
+                    >
+                        <View style={[styles.progressBar, styles.progressBarActive]} />
+                        <View style={[styles.progressBar, styles.progressBarActive]} />
+                        <View style={[styles.progressBar, styles.progressBarActive]} />
+                        <View style={styles.progressBar} />
+                    </View>
+
+                    <Text style={styles.step}>3 OF 4</Text>
                 </View>
 
                 <View style={styles.introduction}>
                     <Text style={styles.eyebrow}>YOUR ACCESS PLAN</Text>
-                    <Text style={styles.title}>A route designed around you</Text>
+
+                    <Text style={styles.title}>
+                        A route designed{'\n'}around you
+                    </Text>
+
                     <Text style={styles.description}>{plan.summary}</Text>
                 </View>
 
-                {plan.route && (
+                {plan.route ? (
                     <>
                         <View style={styles.routeCard}>
                             <View style={styles.routeHeading}>
                                 <View style={styles.routeIcon}>
-                                    <Text style={styles.routeIconText}>🧭</Text>
+                                    <Ionicons
+                                        name="navigate-outline"
+                                        size={24}
+                                        color={HokieColors.burgundy}
+                                    />
                                 </View>
 
                                 <View style={styles.routeHeadingText}>
-                                    <Text style={styles.routeLabel}>RECOMMENDED ROUTE</Text>
-                                    <Text style={styles.routeTitle}>
-                                        {plan.route.origin} → {plan.route.destination}
+                                    <Text style={styles.routeLabel}>
+                                        RECOMMENDED ROUTE
                                     </Text>
+
+                                    <View style={styles.routeTitleRow}>
+                                        <Text style={styles.routeTitle}>
+                                            {plan.route.origin}
+                                        </Text>
+
+                                        <Ionicons
+                                            name="arrow-forward"
+                                            size={17}
+                                            color="#F5CDD9"
+                                        />
+
+                                        <Text style={styles.routeTitle}>
+                                            {plan.route.destination}
+                                        </Text>
+                                    </View>
                                 </View>
                             </View>
 
@@ -140,24 +324,98 @@ export default function AccessPlanScreen() {
                             </View>
 
                             <View style={styles.routeDetails}>
-                                <Text style={styles.routeDetail}>
-                                    🏢 {plan.route.indoorPercentage}% indoors
-                                </Text>
+                                <View style={styles.routeDetail}>
+                                    <Ionicons
+                                        name="business-outline"
+                                        size={17}
+                                        color={HokieColors.surface}
+                                    />
+                                    <Text style={styles.routeDetailText}>
+                                        {plan.route.indoorPercentage}% indoors
+                                    </Text>
+                                </View>
 
-                                <Text style={styles.routeDetail}>
-                                    ↗️ {plan.route.slope} slope
-                                </Text>
+                                <View style={styles.routeDetail}>
+                                    <Ionicons
+                                        name="trending-up-outline"
+                                        size={17}
+                                        color={HokieColors.surface}
+                                    />
+                                    <Text style={styles.routeDetailText}>
+                                        {plan.route.slope} slope
+                                    </Text>
+                                </View>
                             </View>
                         </View>
 
+                        <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={
+                                isNarrating
+                                    ? 'Pause route narration'
+                                    : audioUri
+                                        ? 'Resume route narration'
+                                        : 'Listen to my route'
+                            }
+                            accessibilityState={{
+                                disabled: isPreparingAudio,
+                                busy: isPreparingAudio,
+                            }}
+                            disabled={isPreparingAudio}
+                            onPress={() => void handleListenToRoute()}
+                            style={({ pressed }) => [
+                                styles.secondaryButton,
+                                isPreparingAudio && styles.buttonDisabled,
+                                pressed && styles.pressed,
+                            ]}
+                        >
+                            <Ionicons
+                                name={
+                                    isNarrating
+                                        ? 'pause-outline'
+                                        : 'volume-high-outline'
+                                }
+                                size={20}
+                                color={HokieColors.burgundy}
+                            />
+
+                            <Text style={styles.secondaryButtonText}>
+                                {isPreparingAudio
+                                    ? 'Preparing voice guidance…'
+                                    : isNarrating
+                                        ? 'Pause narration'
+                                        : audioUri
+                                            ? 'Resume narration'
+                                            : 'Listen to my route'}
+                            </Text>
+                        </Pressable>
+
+                        {audioError ? (
+                            <Text
+                                accessibilityRole="alert"
+                                style={styles.audioError}
+                            >
+                                {audioError}
+                            </Text>
+                        ) : null}
+
                         {plan.accommodations.length > 0 && (
                             <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>Included accommodations</Text>
+                                <Text style={styles.sectionTitle}>
+                                    Included accommodations
+                                </Text>
 
                                 {plan.accommodations.map((accommodation) => (
-                                    <View key={accommodation} style={styles.accommodationRow}>
+                                    <View
+                                        key={accommodation}
+                                        style={styles.accommodationRow}
+                                    >
                                         <View style={styles.checkCircle}>
-                                            <Text style={styles.checkmark}>✓</Text>
+                                            <Ionicons
+                                                name="checkmark"
+                                                size={16}
+                                                color={HokieColors.burgundy}
+                                            />
                                         </View>
 
                                         <Text style={styles.rowText}>{accommodation}</Text>
@@ -168,11 +426,19 @@ export default function AccessPlanScreen() {
 
                         {plan.warnings.length > 0 && (
                             <View style={styles.warningSection}>
-                                <Text style={styles.warningTitle}>Before you go</Text>
+                                <View style={styles.warningHeading}>
+                                    <Ionicons
+                                        name="warning-outline"
+                                        size={21}
+                                        color={HokieColors.warning}
+                                    />
+
+                                    <Text style={styles.warningTitle}>Before you go</Text>
+                                </View>
 
                                 {plan.warnings.map((warning) => (
                                     <View key={warning} style={styles.warningRow}>
-                                        <Text style={styles.warningIcon}>⚠️</Text>
+                                        <View style={styles.warningDot} />
                                         <Text style={styles.warningText}>{warning}</Text>
                                     </View>
                                 ))}
@@ -182,29 +448,47 @@ export default function AccessPlanScreen() {
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>Step-by-step route</Text>
 
-                            {plan.steps.map((step, index) => (
-                                <View key={`${step}-${index}`} style={styles.stepRow}>
+                            {plan.steps.map((routeStep, index) => (
+                                <View
+                                    key={`${routeStep}-${index}`}
+                                    style={styles.stepRow}
+                                >
                                     <View style={styles.stepNumber}>
-                                        <Text style={styles.stepNumberText}>{index + 1}</Text>
+                                        <Text style={styles.stepNumberText}>
+                                            {index + 1}
+                                        </Text>
                                     </View>
 
-                                    <Text style={styles.stepText}>{step}</Text>
+                                    <Text style={styles.stepText}>{routeStep}</Text>
                                 </View>
                             ))}
                         </View>
                     </>
-                )}
-
-                {!plan.route && (
+                ) : (
                     <View style={styles.emptyCard}>
-                        <Text style={styles.emptyIcon}>📍</Text>
-                        <Text style={styles.emptyTitle}>Route unavailable</Text>
+                        <View style={styles.emptyIcon}>
+                            <Ionicons
+                                name="location-outline"
+                                size={26}
+                                color={HokieColors.burgundy}
+                            />
+                        </View>
+
+                        <Text style={styles.emptyTitle}>
+                            {isLoading ? 'Building your route' : 'Route unavailable'}
+                        </Text>
                         <Text style={styles.emptyText}>{plan.summary}</Text>
                     </View>
                 )}
 
                 <View style={styles.agentNotice}>
-                    <Text style={styles.agentNoticeIcon}>✨</Text>
+                    <View style={styles.agentNoticeIcon}>
+                        <Ionicons
+                            name="sparkles-outline"
+                            size={21}
+                            color={HokieColors.burgundy}
+                        />
+                    </View>
 
                     <View style={styles.agentNoticeContent}>
                         <Text style={styles.agentNoticeTitle}>
@@ -212,11 +496,37 @@ export default function AccessPlanScreen() {
                         </Text>
 
                         <Text style={styles.agentNoticeText}>
-                            Your route was created using your selected access preferences.
-                            You can return and update them whenever your needs change.
+                            Built around your selected access preferences. Update them
+                            whenever your needs change.
                         </Text>
                     </View>
                 </View>
+
+                <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Enter live event mode"
+                    onPress={() => router.push('/live-event')}
+                    style={({ pressed }) => [
+                        styles.primaryButton,
+                        pressed && styles.pressed,
+                    ]}
+                >
+                    <Ionicons
+                        name="radio-outline"
+                        size={20}
+                        color={HokieColors.surface}
+                    />
+
+                    <Text style={styles.primaryButtonText}>
+                        Enter live event mode
+                    </Text>
+
+                    <Ionicons
+                        name="arrow-forward"
+                        size={20}
+                        color={HokieColors.surface}
+                    />
+                </Pressable>
 
                 <Pressable
                     accessibilityRole="button"
@@ -227,16 +537,26 @@ export default function AccessPlanScreen() {
                         pressed && styles.pressed,
                     ]}
                 >
+                    <Ionicons
+                        name="options-outline"
+                        size={19}
+                        color={HokieColors.burgundy}
+                    />
+
                     <Text style={styles.secondaryButtonText}>
                         Change my preferences
                     </Text>
                 </Pressable>
 
+
                 <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Return to home"
                     onPress={() => router.replace('/')}
-                    style={styles.homeButton}
+                    style={({ pressed }) => [
+                        styles.homeButton,
+                        pressed && styles.pressed,
+                    ]}
                 >
                     <Text style={styles.homeButtonText}>Return home</Text>
                 </Pressable>
@@ -248,86 +568,94 @@ export default function AccessPlanScreen() {
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: COLORS.cream,
+        backgroundColor: HokieColors.background,
     },
     content: {
-        paddingHorizontal: 20,
-        paddingTop: 10,
-        paddingBottom: 42,
+        paddingHorizontal: HokieSpacing.xl,
+        paddingTop: HokieSpacing.sm,
+        paddingBottom: HokieSpacing.section,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
     },
     backButton: {
-        width: 48,
-        height: 48,
+        width: 44,
+        height: 44,
+        borderRadius: HokieRadius.medium,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: COLORS.white,
-        borderRadius: 16,
+        backgroundColor: HokieColors.surface,
         borderWidth: 1,
-        borderColor: COLORS.border,
+        borderColor: HokieColors.border,
     },
-    backText: {
-        color: COLORS.maroon,
-        fontSize: 34,
-        lineHeight: 36,
+    progress: {
+        flex: 1,
+        flexDirection: 'row',
+        gap: 6,
+        marginHorizontal: HokieSpacing.xl,
+    },
+    progressBar: {
+        flex: 1,
+        height: 4,
+        borderRadius: HokieRadius.pill,
+        backgroundColor: HokieColors.border,
+    },
+    progressBarActive: {
+        backgroundColor: HokieColors.burgundy,
     },
     step: {
-        color: COLORS.maroon,
-        fontSize: 12,
+        color: HokieColors.burgundy,
+        fontSize: 11,
         fontWeight: '800',
         letterSpacing: 1,
     },
     introduction: {
-        marginTop: 34,
+        marginTop: HokieSpacing.xxl,
     },
     eyebrow: {
-        color: COLORS.maroon,
-        fontSize: 12,
+        color: HokieColors.burgundy,
+        fontSize: 11,
         fontWeight: '800',
-        letterSpacing: 1.3,
+        letterSpacing: 1.4,
     },
     title: {
-        color: COLORS.text,
-        fontSize: 32,
-        fontWeight: '800',
-        lineHeight: 39,
-        letterSpacing: -0.6,
-        marginTop: 10,
+        color: HokieColors.text,
+        fontFamily: 'serif',
+        fontSize: 34,
+        fontWeight: '700',
+        lineHeight: 37,
+        letterSpacing: -0.8,
+        marginTop: HokieSpacing.sm,
     },
     description: {
-        color: COLORS.secondaryText,
-        fontSize: 16,
-        lineHeight: 24,
-        marginTop: 13,
+        color: HokieColors.textSecondary,
+        fontSize: HokieTypography.label,
+        lineHeight: 20,
+        marginTop: HokieSpacing.md,
     },
     routeCard: {
-        backgroundColor: COLORS.maroon,
-        borderRadius: 24,
-        padding: 20,
-        marginTop: 28,
+        backgroundColor: HokieColors.burgundy,
+        borderRadius: HokieRadius.large,
+        padding: HokieSpacing.lg,
+        marginTop: HokieSpacing.xxl,
+        ...HokieShadow,
     },
     routeHeading: {
         flexDirection: 'row',
         alignItems: 'center',
     },
     routeIcon: {
-        width: 48,
-        height: 48,
+        width: 46,
+        height: 46,
+        borderRadius: HokieRadius.medium,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: COLORS.white,
-        borderRadius: 15,
-    },
-    routeIconText: {
-        fontSize: 23,
+        backgroundColor: HokieColors.surface,
     },
     routeHeadingText: {
         flex: 1,
-        marginLeft: 14,
+        marginLeft: HokieSpacing.md,
     },
     routeLabel: {
         color: '#F5CDD9',
@@ -335,218 +663,277 @@ const styles = StyleSheet.create({
         fontWeight: '800',
         letterSpacing: 1.1,
     },
-    routeTitle: {
-        color: COLORS.white,
-        fontSize: 16,
-        fontWeight: '800',
-        lineHeight: 22,
+    routeTitleRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        gap: 5,
         marginTop: 4,
+    },
+    routeTitle: {
+        color: HokieColors.surface,
+        fontSize: HokieTypography.label,
+        fontWeight: '700',
+        lineHeight: 19,
     },
     metrics: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#751A38',
-        borderRadius: 18,
-        paddingVertical: 16,
-        marginTop: 20,
+        backgroundColor: HokieColors.burgundyDark,
+        borderRadius: HokieRadius.medium,
+        paddingVertical: HokieSpacing.md,
+        marginTop: HokieSpacing.lg,
     },
     metric: {
         flex: 1,
         alignItems: 'center',
     },
     metricValue: {
-        color: COLORS.white,
-        fontSize: 21,
-        fontWeight: '900',
+        color: HokieColors.surface,
+        fontSize: HokieTypography.heading,
+        fontWeight: '800',
     },
     metricLabel: {
         color: '#F5CDD9',
         fontSize: 11,
-        marginTop: 3,
+        marginTop: 2,
     },
     metricDivider: {
         width: 1,
-        height: 32,
+        height: 30,
         backgroundColor: '#A94C6B',
     },
     routeDetails: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginTop: 17,
+        gap: HokieSpacing.md,
+        marginTop: HokieSpacing.lg,
     },
     routeDetail: {
-        color: COLORS.white,
-        fontSize: 13,
-        fontWeight: '700',
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    routeDetailText: {
+        color: HokieColors.surface,
+        fontSize: 12,
+        fontWeight: '600',
+        marginLeft: 6,
+        textTransform: 'capitalize',
     },
     section: {
-        backgroundColor: COLORS.white,
-        borderRadius: 22,
+        backgroundColor: HokieColors.surface,
+        borderRadius: HokieRadius.large,
         borderWidth: 1,
-        borderColor: COLORS.border,
-        padding: 20,
-        marginTop: 18,
+        borderColor: HokieColors.border,
+        padding: HokieSpacing.lg,
+        marginTop: HokieSpacing.lg,
     },
     sectionTitle: {
-        color: COLORS.text,
-        fontSize: 18,
+        color: HokieColors.text,
+        fontSize: HokieTypography.subheading,
         fontWeight: '800',
-        marginBottom: 15,
+        marginBottom: HokieSpacing.sm,
     },
     accommodationRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 11,
+        marginTop: HokieSpacing.md,
     },
     checkCircle: {
-        width: 27,
-        height: 27,
+        width: 28,
+        height: 28,
+        borderRadius: HokieRadius.small,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: COLORS.paleMaroon,
-        borderRadius: 9,
-    },
-    checkmark: {
-        color: COLORS.maroon,
-        fontSize: 15,
-        fontWeight: '900',
+        backgroundColor: HokieColors.burgundySoft,
     },
     rowText: {
         flex: 1,
-        color: COLORS.text,
-        fontSize: 14,
-        lineHeight: 20,
-        marginLeft: 12,
+        color: HokieColors.text,
+        fontSize: HokieTypography.label,
+        lineHeight: 19,
+        marginLeft: HokieSpacing.md,
     },
     warningSection: {
-        backgroundColor: COLORS.warningBackground,
-        borderRadius: 22,
-        padding: 20,
-        marginTop: 18,
+        backgroundColor: HokieColors.warningSoft,
+        borderRadius: HokieRadius.large,
+        padding: HokieSpacing.lg,
+        marginTop: HokieSpacing.lg,
+    },
+    warningHeading: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     warningTitle: {
-        color: COLORS.warning,
-        fontSize: 18,
+        color: HokieColors.warning,
+        fontSize: HokieTypography.subheading,
         fontWeight: '800',
-        marginBottom: 12,
+        marginLeft: HokieSpacing.sm,
     },
     warningRow: {
         flexDirection: 'row',
         alignItems: 'flex-start',
-        marginTop: 8,
+        marginTop: HokieSpacing.md,
     },
-    warningIcon: {
-        fontSize: 18,
-        marginRight: 10,
+    warningDot: {
+        width: 6,
+        height: 6,
+        borderRadius: HokieRadius.pill,
+        backgroundColor: HokieColors.warning,
+        marginTop: 7,
+        marginRight: HokieSpacing.md,
     },
     warningText: {
         flex: 1,
-        color: COLORS.warning,
-        fontSize: 14,
+        color: HokieColors.warning,
+        fontSize: HokieTypography.label,
         lineHeight: 20,
     },
     stepRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 13,
+        marginTop: HokieSpacing.md,
     },
     stepNumber: {
-        width: 31,
-        height: 31,
+        width: 30,
+        height: 30,
+        borderRadius: HokieRadius.small,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: COLORS.paleOrange,
-        borderRadius: 10,
+        backgroundColor: HokieColors.warningSoft,
     },
     stepNumberText: {
-        color: COLORS.orange,
+        color: HokieColors.orange,
         fontSize: 13,
-        fontWeight: '900',
+        fontWeight: '800',
     },
     stepText: {
         flex: 1,
-        color: COLORS.text,
-        fontSize: 14,
-        lineHeight: 20,
-        marginLeft: 12,
+        color: HokieColors.text,
+        fontSize: HokieTypography.label,
+        lineHeight: 19,
+        marginLeft: HokieSpacing.md,
     },
     emptyCard: {
         alignItems: 'center',
-        backgroundColor: COLORS.white,
-        borderRadius: 22,
+        backgroundColor: HokieColors.surface,
+        borderRadius: HokieRadius.large,
         borderWidth: 1,
-        borderColor: COLORS.border,
-        padding: 24,
-        marginTop: 28,
+        borderColor: HokieColors.border,
+        padding: HokieSpacing.xxl,
+        marginTop: HokieSpacing.xxl,
     },
     emptyIcon: {
-        fontSize: 34,
+        width: 48,
+        height: 48,
+        borderRadius: HokieRadius.medium,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: HokieColors.burgundySoft,
     },
     emptyTitle: {
-        color: COLORS.text,
-        fontSize: 19,
+        color: HokieColors.text,
+        fontSize: HokieTypography.subheading,
         fontWeight: '800',
-        marginTop: 13,
+        marginTop: HokieSpacing.md,
     },
     emptyText: {
-        color: COLORS.secondaryText,
-        fontSize: 14,
-        lineHeight: 21,
+        color: HokieColors.textSecondary,
+        fontSize: HokieTypography.label,
+        lineHeight: 20,
         textAlign: 'center',
-        marginTop: 8,
+        marginTop: HokieSpacing.sm,
     },
     agentNotice: {
         flexDirection: 'row',
-        backgroundColor: '#F0E8F8',
-        borderRadius: 20,
-        padding: 17,
-        marginTop: 18,
+        alignItems: 'center',
+        backgroundColor: HokieColors.burgundySoft,
+        borderRadius: HokieRadius.medium,
+        padding: HokieSpacing.md,
+        marginTop: HokieSpacing.lg,
     },
     agentNoticeIcon: {
-        fontSize: 22,
-        marginRight: 12,
+        width: 38,
+        height: 38,
+        borderRadius: HokieRadius.small,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: HokieColors.surface,
+        marginRight: HokieSpacing.md,
     },
     agentNoticeContent: {
         flex: 1,
     },
     agentNoticeTitle: {
-        color: COLORS.text,
-        fontSize: 14,
-        fontWeight: '800',
+        color: HokieColors.text,
+        fontSize: HokieTypography.label,
+        fontWeight: '700',
     },
     agentNoticeText: {
-        color: COLORS.secondaryText,
-        fontSize: 13,
-        lineHeight: 19,
-        marginTop: 5,
+        color: HokieColors.textSecondary,
+        fontSize: 12,
+        lineHeight: 17,
+        marginTop: 3,
     },
-    secondaryButton: {
-        minHeight: 58,
+    primaryButton: {
+        minHeight: 56,
+        flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: COLORS.maroon,
-        borderRadius: 18,
-        marginTop: 24,
+        gap: HokieSpacing.sm,
+        backgroundColor: HokieColors.burgundy,
+        borderRadius: HokieRadius.pill,
+        marginTop: HokieSpacing.xl,
     },
-    secondaryButtonText: {
-        color: COLORS.white,
-        fontSize: 16,
+    primaryButtonText: {
+        color: HokieColors.surface,
+        fontSize: HokieTypography.body,
         fontWeight: '800',
     },
+    secondaryButton: {
+        minHeight: 54,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: HokieSpacing.sm,
+        backgroundColor: HokieColors.surface,
+        borderRadius: HokieRadius.pill,
+        borderWidth: 1,
+        borderColor: HokieColors.burgundy,
+        marginTop: HokieSpacing.md,
+    },
+    secondaryButtonText: {
+        color: HokieColors.burgundy,
+        fontSize: HokieTypography.label,
+        fontWeight: '700',
+    },
+
+    buttonDisabled: {
+        opacity: 0.55,
+    },
+    audioError: {
+        color: HokieColors.textSecondary,
+        fontSize: 12,
+        lineHeight: 17,
+        textAlign: 'center',
+        marginHorizontal: HokieSpacing.lg,
+        marginTop: HokieSpacing.sm,
+    },
+
     homeButton: {
         minHeight: 48,
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 8,
+        marginTop: HokieSpacing.sm,
     },
     homeButtonText: {
-        color: COLORS.maroon,
-        fontSize: 14,
-        fontWeight: '700',
+        color: HokieColors.burgundy,
+        fontSize: HokieTypography.label,
+        fontWeight: '600',
         textDecorationLine: 'underline',
     },
     pressed: {
-        opacity: 0.8,
-        transform: [{ scale: 0.99 }],
+        opacity: 0.78,
+        transform: [{ scale: 0.98 }],
     },
 });

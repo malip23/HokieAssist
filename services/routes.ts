@@ -1,4 +1,4 @@
-import { findRoutes as findDatabricksRoutes } from "../server/services/databricks";
+import routesData from "../data/routes.json";
 import { AccessNeed, Route } from "./types";
 
 type DatabricksRouteRow = {
@@ -20,6 +20,14 @@ interface RoutePreferences {
   energyLevel?: "low" | "moderate" | "normal";
   urgency?: "low" | "normal" | "high";
 }
+
+const localRoutes = (
+  routesData as DatabricksRouteRow[]
+).map(convertDatabricksRoute);
+
+const apiUrl = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, "");
+const useLiveRoutes =
+  process.env.EXPO_PUBLIC_USE_LIVE_ROUTES === "true";
 
 function normalizeSlope(value: string): Route["slope"] {
   const slope = value?.toLowerCase();
@@ -55,10 +63,63 @@ function convertDatabricksRoute(
     seatingAvailable: toBoolean(row.seating),
     restroomNearby: toBoolean(row.restroom_nearby),
     waterNearby: toBoolean(row.water_nearby),
-
-    // Crowding can later come from Databricks conditions.
     crowded: false,
   };
+}
+
+async function loadDatabricksRoutes(
+  origin: string,
+  destination: string,
+): Promise<Route[]> {
+  if (!apiUrl || !useLiveRoutes) {
+  return [];
+}
+
+  try {
+    const query = new URLSearchParams({
+      origin,
+      destination,
+    });
+
+    const response = await fetch(
+      `${apiUrl}/api/routes?${query.toString()}`,
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Route API returned status ${response.status}`,
+      );
+    }
+
+    const data: unknown = await response.json();
+
+    if (!Array.isArray(data)) {
+      throw new Error("Route API returned an invalid response.");
+    }
+
+    return (data as DatabricksRouteRow[]).map(
+      convertDatabricksRoute,
+    );
+  } catch (error) {
+    console.warn(
+      "Databricks routes unavailable. Using local route data.",
+      error,
+    );
+
+    return [];
+  }
+}
+
+function findLocalRoutes(
+  origin: string,
+  destination: string,
+): Route[] {
+  return localRoutes.filter(
+    (route) =>
+      route.origin.toLowerCase() === origin.toLowerCase() &&
+      route.destination.toLowerCase() ===
+        destination.toLowerCase(),
+  );
 }
 
 /**
@@ -73,10 +134,6 @@ function scoreRoute(
   preferences: RoutePreferences = {},
 ): number {
   let score = route.walkingTime;
-
-  // --------------------------------
-  // ACCESS NEEDS
-  // --------------------------------
 
   if (accessNeeds.includes("no_stairs")) {
     score += route.stairs * 20;
@@ -118,15 +175,29 @@ function scoreRoute(
     score -= route.indoorPercentage * 0.2;
   }
 
-  if (accessNeeds.includes("low_stimulation")) {
-    if (route.crowded) {
-      score += 25;
+  if (
+    accessNeeds.includes("low_stimulation") &&
+    route.crowded
+  ) {
+    score += 25;
+  }
+
+  if (accessNeeds.includes("minimize_walking")) {
+    score += route.distance * 12;
+    score += route.walkingTime * 0.5;
+  }
+
+  if (accessNeeds.includes("minimize_standing")) {
+    if (route.seatingAvailable) {
+      score -= 8;
+    } else {
+      score += 15;
     }
   }
 
-  // --------------------------------
-  // ENERGY LEVEL
-  // --------------------------------
+  if (accessNeeds.includes("avoid_heat")) {
+    score -= route.indoorPercentage * 0.15;
+  }
 
   if (preferences.energyLevel === "low") {
     score += route.walkingTime * 0.75;
@@ -142,7 +213,10 @@ function scoreRoute(
 
     if (route.slope === "high") {
       score += 20;
-    } else if (route.slope === "moderate") {
+    } else if (
+      route.slope === "moderate" ||
+      route.slope === "medium"
+    ) {
       score += 8;
     }
   }
@@ -154,10 +228,6 @@ function scoreRoute(
       score += 10;
     }
   }
-
-  // --------------------------------
-  // URGENCY
-  // --------------------------------
 
   if (preferences.urgency === "high") {
     score += route.walkingTime * 1.5;
@@ -178,8 +248,9 @@ function scoreRoute(
 }
 
 /**
- * Gets routes from Databricks and ranks them using
- * HokieAssist's existing accessibility scoring.
+ * Gets routes from the HokieAssist server.
+ * If the server or Databricks is unavailable,
+ * it safely falls back to the bundled campus data.
  */
 export async function findRoutes(
   origin: string,
@@ -187,20 +258,20 @@ export async function findRoutes(
   accessNeeds: AccessNeed[],
   preferences: RoutePreferences = {},
 ): Promise<Route[]> {
-  const databricksRows = await findDatabricksRoutes(
+  const databricksRoutes = await loadDatabricksRoutes(
     origin,
     destination,
   );
 
-  const matchingRoutes = (
-    databricksRows as DatabricksRouteRow[]
-  ).map(convertDatabricksRoute);
+  const matchingRoutes =
+    databricksRoutes.length > 0
+      ? databricksRoutes
+      : findLocalRoutes(origin, destination);
 
   if (matchingRoutes.length === 0) {
     return [];
   }
 
-  // No stairs is treated as a hard accessibility requirement.
   let viableRoutes = matchingRoutes;
 
   if (accessNeeds.includes("no_stairs")) {
@@ -209,17 +280,11 @@ export async function findRoutes(
     );
   }
 
-  // If no route satisfies the hard requirement,
-  // return the closest alternatives rather than nothing.
   if (viableRoutes.length === 0) {
-    return matchingRoutes.sort(
-      (a, b) =>
-        scoreRoute(a, accessNeeds, preferences) -
-        scoreRoute(b, accessNeeds, preferences),
-    );
+    viableRoutes = matchingRoutes;
   }
 
-  return viableRoutes.sort(
+  return [...viableRoutes].sort(
     (a, b) =>
       scoreRoute(a, accessNeeds, preferences) -
       scoreRoute(b, accessNeeds, preferences),
