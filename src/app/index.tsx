@@ -49,58 +49,6 @@ function QuickAction({ icon, label, onPress }: QuickActionProps) {
   );
 }
 
-type NavigationItemProps = {
-  icon: IconName;
-  selectedIcon: IconName;
-  label: string;
-  active?: boolean;
-  onPress?: () => void;
-};
-
-function NavigationItem({
-  icon,
-  selectedIcon,
-  label,
-  active = false,
-  onPress,
-}: NavigationItemProps) {
-  const color = active
-    ? HokieColors.burgundy
-    : HokieColors.inactive;
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityState={{
-        selected: active,
-        disabled: !onPress,
-      }}
-      disabled={!onPress}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.navigationItem,
-        pressed && styles.pressed,
-      ]}
-    >
-      <Ionicons
-        name={active ? selectedIcon : icon}
-        size={23}
-        color={color}
-      />
-
-      <Text
-        style={[
-          styles.navigationLabel,
-          active && styles.navigationLabelActive,
-        ]}
-      >
-        {label}
-      </Text>
-    </Pressable>
-  );
-}
-
 export default function HomeScreen() {
   const router = useRouter();
 
@@ -278,30 +226,6 @@ export default function HomeScreen() {
           </Text>
         </View>
       </ScrollView>
-
-      <View style={styles.bottomNavigation}>
-        <NavigationItem
-          icon="home-outline"
-          selectedIcon="home"
-          label="Home"
-          active
-          onPress={() => undefined}
-        />
-
-        <NavigationItem
-          icon="compass-outline"
-          selectedIcon="compass"
-          label="Explore"
-          onPress={() => router.push('/explore')}
-        />
-
-        <NavigationItem
-          icon="calendar-outline"
-          selectedIcon="calendar"
-          label="Events"
-          onPress={() => router.push('/events')}
-        />
-      </View>
     </SafeAreaView>
   );
 }
@@ -314,7 +238,7 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: HokieSpacing.xl,
     paddingTop: HokieSpacing.md,
-    paddingBottom: 118,
+    paddingBottom: HokieSpacing.xxl,
   },
   brandSection: {
     marginBottom: HokieSpacing.section,
