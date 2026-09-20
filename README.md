@@ -2,278 +2,143 @@
 
 ## A data-driven AI agent for an accessible smart campus
 
-HokieAssist is a mobile smart-campus assistant designed to help Virginia Tech students navigate campus, understand what's happening around them, and participate in campus life in ways that work for their individual needs.
+HokieAssist is a mobile smart-campus assistant designed to help Virginia Tech students navigate campus and participate in campus life in ways that work for their individual access needs.
 
-Instead of asking students to identify a disability or medical condition, HokieAssist lets students choose the types of support they need in the moment.
+Instead of asking students to identify a disability or medical condition, HokieAssist asks:
 
-Examples include:
+> **What would make it easier for you to participate today?**
 
-- Minimize walking
+Students can express needs such as:
+
 - Avoid stairs
+- Minimize walking
 - Minimize standing
-- Frequent seating
-- Avoid heat
+- Find frequent seating
 - Prefer indoor routes
 - Avoid crowded or noisy areas
-- Restrooms nearby
-- Water nearby
-- Elevator required
-- Low-stimulation environment
+- Stay near restrooms or water
+- Require an elevator
+- Prefer a low-stimulation environment
 
-HokieAssist combines these preferences with campus events, buildings, routes, accessibility information, and changing campus conditions to create a personalized campus experience.
+HokieAssist combines those needs with campus route data, building information, events, and changing conditions to create a personalized access plan.
+
+> **Prototype note:** The current campus accessibility and condition data is curated for hackathon demonstration purposes and should not be treated as official Virginia Tech accessibility or emergency guidance.
 
 ---
 
 ## The Problem
 
-Navigating a university campus can be difficult when students have different access needs that are not reflected in standard campus maps or event information.
+Traditional campus navigation tools usually optimize for the shortest or fastest route. That does not always make a route usable for every student.
 
 A student may need to:
 
-- Find an accessible route to an event
-- Avoid stairs or long walking distances
+- Avoid stairs or steep routes
+- Reduce walking or standing
 - Find seating before or during an event
-- Find a nearby restroom or water station
-- Understand an unexpected room or schedule change
-- Keep track of important event announcements
-- Take a break without missing important information
-- Find quieter or lower-stimulation areas
+- Stay close to restrooms or water
+- Avoid high-stimulation or crowded spaces
+- Find an alternate route when an elevator becomes unavailable
+- Take a break without losing track of what is happening
 
-Traditional campus navigation tools usually focus on the shortest or fastest route. Event platforms provide information about events, but they do not necessarily adapt that information to an individual student's needs.
-
-HokieAssist connects these pieces of information into one personalized experience.
+HokieAssist brings navigation, accessibility preferences, campus data, and AI together in one experience.
 
 ---
 
 ## Our Solution
 
-HokieAssist acts as an intelligent campus agent that connects:
+HokieAssist acts as an accessibility-aware campus agent.
 
-### Student Needs + Campus Data + Events + Routes + AI
+A student can say:
 
-The agent can use this information to create personalized recommendations and adapt them when campus conditions change.
+> "I'm exhausted and running late. I'm at Newman Library and need to get to Squires Student Center. I don't want stairs and I need somewhere to sit."
 
-For example, a student could say:
+HokieAssist can:
 
-> "I'm at Newman Library and I need to get to the career fair in 30 minutes. I don't want stairs and I need somewhere to sit."
+1. Use Gemini to interpret the student's natural-language request.
+2. Query campus route data from Databricks.
+3. Convert Databricks data into the application's route format.
+4. Score available routes using accessibility needs, energy level, and urgency.
+5. Build a personalized access plan.
+6. Present the plan through the mobile interface.
+7. Use Focus Mode to simplify the plan.
+8. Use ElevenLabs for voice guidance.
 
-HokieAssist can create a personalized plan:
-
-```text
-Newman Library
-       ↓
-Accessible Route
-       ↓
-Squires Student Center
-       ↓
-Seating / Rest Break
-       ↓
-Career Fair
-```
-
-Instead of simply finding the shortest route, HokieAssist considers what makes the route usable for that student.
+The system is designed to choose the route that best matches the student's needs, not simply the shortest route.
 
 ---
 
-## Three Core Experiences
+## Core Experiences
 
 ### 1. UNDERSTAND
 
 HokieAssist helps students understand information around them.
 
-**Caption Mode** — Provides accessible versions of spoken information such as:
+### Focus Mode
+
+Focus Mode:
+
+- Reduces a plan to the most important steps
+- Highlights actions and warnings
+- Makes complicated information easier to follow
+
+Future extensions can include:
 
 - Live captions
-- Event announcements
-- Speaker identification
-- Written announcements
-
-**Describe Mode** — Helps students understand visual information such as:
-
-- Signs
-- Posters
-- Flyers
-- Slides
-- Charts
-- Event information
-
-**Calm Mode** — Makes changing or overwhelming situations easier to understand by:
-
-- Explaining what is happening
-- Breaking instructions into steps
-- Warning about transitions
-- Explaining unexpected changes
-- Providing relevant environmental information
-
-**Focus Mode** — Extracts the most important information from complicated announcements or event information:
-
-- Key points
-- Deadlines
-- Action items
-- Important changes
+- Visual descriptions
+- Simplified announcements
+- "What Did I Miss?" summaries
 
 ---
 
 ### 2. GET THERE
 
-#### Personalized Accessible Navigation
+HokieAssist provides personalized route recommendations using factors such as:
 
-HokieAssist provides routes based on what the student needs rather than simply choosing the shortest route.
-
-A route can consider:
-
-- Walking distance
 - Walking time
+- Distance
 - Stairs
 - Elevators
-- Steep hills
-- Indoor vs. outdoor routes
+- Slope
+- Indoor percentage
 - Seating
 - Restrooms
 - Water
-- Crowds
-- Noise
-- Other available campus conditions
+- Crowding
+- Energy level
+- Urgency
 
-For example:
-
-#### Standard route
+The route-planning flow is:
 
 ```text
-Squires → Torgersen
-
-7 minutes
-0.4 miles
+Student Request
+      ↓
+Gemini
+      ↓
+Structured StudentRequest
+      ↓
+Databricks Campus Routes
+      ↓
+Accessibility-Aware Route Scoring
+      ↓
+Best Route
+      ↓
+Access Plan
 ```
-
-#### HokieAssist route
-
-```text
-Squires → Torgersen
-
-11 minutes
-0.5 miles
-
-✓ No stairs
-✓ Elevator available
-✓ Seating along route
-✓ Indoor section
-✓ Restroom nearby
-```
-
-The second route may take longer, but it may better match the student's selected needs.
 
 ---
 
 ### 3. PARTICIPATE
 
-HokieAssist helps students participate in campus activities, not just get to them.
+HokieAssist is designed to help students participate in campus activities, not only reach them.
 
-A student can create a personalized plan for an event such as a career fair, club meeting, lecture, or workshop.
+The access plan can include:
 
-Example:
-
-```text
-CAREER FAIR — ACCESS PLAN
-
-12:35
-Leave Newman Library
-
-12:35–12:47
-Accessible route to Squires
-
-12:47–12:55
-Seated rest break
-
-12:55
-Enter career fair
-
-1:00–1:10
-Deloitte
-
-1:10–1:20
-Seated break
-
-1:20–1:30
-Capital One
-
-1:30–1:40
-Quiet recovery
-
-1:40
-Continue to next activity
-```
-
-The plan can change if the student's needs or campus conditions change.
-
----
-
-## Key Features
-
-### Personalized Access Preferences
-
-Students can select what would make campus easier for them that day.
-
-Examples:
-
-```text
-☐ Minimize walking
-☐ Avoid stairs
-☐ Minimize standing
-☐ Frequent seating
-☐ Avoid heat
-☐ Prefer indoor routes
-☐ Quiet environment
-☐ Avoid crowds
-☐ Restrooms nearby
-☐ Water nearby
-☐ Elevator required
-```
-
-HokieAssist focuses on access needs rather than requiring students to disclose a diagnosis.
-
----
-
-### AI Campus Agent
-
-Students can interact with HokieAssist using natural language.
-
-Example requests:
-
-> "How do I get to Squires without stairs?"
-> "What's happening near me?"
-> "Where can I sit near my next class?"
-> "What did I miss?"
-> "The elevator is closed. What's another route?"
-
-The agent interprets the request, retrieves relevant campus information, and generates a response based on the student's selected needs.
-
----
-
-## What Did I Miss?
-
-One of HokieAssist's core features is the ability to summarize important information a student missed while taking a break or stepping away from an event.
-
-Example:
-
-```text
-WHAT DID I MISS?
-
-While you were away:
-
-• Networking started
-• Deloitte announced an application deadline
-• The résumé workshop moved to Room 215
-• Capital One is currently at Booth 18
-
-NEXT
-
-Résumé Workshop
-Room 215
-18 minutes
-```
-
-The goal is to give the student the information they actually need without requiring them to reconstruct everything they missed.
+- When to leave
+- Which route to take
+- Where seating is available
+- Rest or recovery breaks
+- Relevant warnings
+- Step-by-step guidance
 
 ---
 
@@ -281,240 +146,202 @@ The goal is to give the student the information they actually need without requi
 
 Campus conditions can change.
 
-For example, an elevator could become unavailable, a building entrance could close, or an event could move to another room.
-
-Instead of simply displaying the disruption, HokieAssist can update the student's plan.
-
-Example:
-
-```text
-⚠️ ROUTE UPDATED
-
-The elevator on your current route
-is unavailable.
-
-New route: 14 minutes
-
-✓ No stairs
-✓ Seating available
-✓ Restroom nearby
-✓ Still arrive before your event
-
-[USE NEW ROUTE]
-```
-
-This dynamic replanning is a key part of the AI-agent experience.
-
----
-
-## Example Use Case
-
-### Career Fair
-
-A student has a career fair coming up and wants to minimize walking and standing.
-
-They tell HokieAssist:
-
-> "I want to go to the career fair, but I need to minimize walking and standing."
-
-HokieAssist:
-
-1. Finds the career fair
-2. Finds the event location
-3. Determines the student's starting location
-4. Retrieves available routes
-5. Applies the student's access preferences
-6. Finds seating and relevant building features
-7. Creates a personalized schedule
-8. Updates the plan if something changes
-
-The student receives:
-
-```text
-YOUR CAREER FAIR PLAN
-
-12:35
-Leave Newman Library
-
-12:47
-Arrive at Squires
-
-12:47–12:55
-Rest near entrance
-
-1:00
-Deloitte
-
-1:10
-Seated break
-
-1:20
-Capital One
-
-1:30
-Quiet recovery
-
-1:40
-Continue if you are ready
-```
-
----
-
-## Data & AI Architecture
-
-HokieAssist is designed around a data-driven campus intelligence layer.
-
-```text
-                    HOKIEASSIST
-                         │
-                         ↓
-                 Student Request
-                         │
-                         ↓
-                    AI AGENT
-                         │
-              ┌──────────┴──────────┐
-              ↓                     ↓
-       Student Preferences      Campus Data
-                                    │
-                   ┌────────────────┼────────────────┐
-                   ↓                ↓                ↓
-               Buildings          Routes           Events
-                   │                │                │
-                   └────────────────┼────────────────┘
-                                    ↓
-                               DATABRICKS
-                                    │
-                                    ↓
-                           Campus Intelligence
-                                    │
-                                    ↓
-                           Personalized Plan
-                                    │
-                                    ↓
-                            Mobile Application
-```
-
----
-
-## Data Sources
-
-The campus data layer can contain information such as:
-
-### Buildings
-
-```text
-Building
-Entrances
-Elevators
-Stairs
-Restrooms
-Seating
-Quiet spaces
-Water
-Accessibility features
-```
-
-### Routes
-
-```text
-Origin
-Destination
-Distance
-Walking time
-Stairs
-Elevators
-Slope
-Indoor percentage
-Seating
-```
-
-### Events
-
-```text
-Event ID
-Name
-Building
-Room
-Start time
-End time
-Event type
-Expected crowd
-Noise level
-Accessibility information
-```
-
-### Campus Conditions
-
-```text
-Location
-Timestamp
-Crowd level
-Noise level
-Temperature
-Construction
-Blocked routes
-```
-
-### Event Updates
-
-```text
-Event
-Timestamp
-Update type
-New location
-Announcement
-```
-
----
-
-## Databricks
-
-Databricks provides the data-driven foundation for HokieAssist.
-
-Rather than treating campus information as isolated datasets, HokieAssist is designed to combine information from different parts of the campus environment.
-
 For example:
 
-```text
-Student Request
-       ↓
-"I need somewhere quiet where I can sit
-before my next class."
-       ↓
-Databricks
-       ↓
-Relevant campus information
-       ↓
-AI Agent
-       ↓
-Personalized recommendation
-```
+- An elevator becomes unavailable
+- A route becomes blocked
+- Construction affects a path
+- A destination becomes crowded
+- An event location changes
 
-The goal is for the AI agent to reason across campus data rather than simply return a static database result.
+HokieAssist includes Databricks campus-condition data so the agent can eventually update recommendations when conditions change.
+
+Example demo flow:
+
+```text
+Original Route
+Newman Library → Squires Student Center
+12 minutes
+0 stairs
+Uses elevator
+
+        ↓
+
+Elevator becomes unavailable
+
+        ↓
+
+Alternative Route
+Newman Library → Squires Student Center
+14 minutes
+0 stairs
+No elevator required
+Seating available
+```
 
 ---
 
-## HokieAI
-
-HokieAI is intended to provide the student-facing AI experience.
-
-Example interaction:
+## AI + Data Architecture
 
 ```text
-Student:
-"I have class in 20 minutes and I'm already
-tired. I need to get from Newman Library
-to McBryde without stairs."
-
-HokieAssist:
-"I found a 12-minute route that avoids
-stairs and minimizes walking. An elevator
-is available and there is seating along
-the route."
+                         HOKIEASSIST
+                              │
+                              ▼
+                       Student Request
+                              │
+                              ▼
+                           Gemini
+                    Natural-Language Parser
+                              │
+                              ▼
+                       StudentRequest
+                              │
+                              ▼
+                         Databricks
+                  Campus Route + Condition Data
+                              │
+                              ▼
+                        Route Scoring
+                 Accessibility + Energy + Urgency
+                              │
+                              ▼
+                         Access Plan
+                              │
+                    ┌─────────┴─────────┐
+                    ▼                   ▼
+                Focus Mode          Mobile UI
+                    │
+                    ▼
+                ElevenLabs
+               Voice Guidance
 ```
 
-The exact integration will depend on the available HokieAI tools and APIs.
+### Responsibility of Each Layer
+
+**Gemini**  
+Understands the student's natural-language request.
+
+**Databricks**  
+Provides structured campus route and condition data.
+
+**Route Scorer**  
+Evaluates routes using accessibility needs, energy level, urgency, and route characteristics.
+
+**Access Plan**  
+Converts the selected route into student-facing guidance.
+
+**Focus Mode**  
+Simplifies the plan into important steps.
+
+**ElevenLabs**  
+Provides optional voice guidance.
+
+---
+
+## Databricks Integration
+
+Databricks provides the data layer for HokieAssist.
+
+The prototype uses the `workspace.hokieassist` schema with tables including:
+
+```text
+workspace.hokieassist.buildings
+workspace.hokieassist.routes
+workspace.hokieassist.events
+workspace.hokieassist.conditions
+```
+
+The TypeScript Databricks service is located at:
+
+```text
+server/services/databricks.ts
+```
+
+It provides functions including:
+
+```typescript
+runQuery();
+findRoutes(origin, destination);
+getCurrentConditions(location);
+```
+
+The Databricks route data is then used by:
+
+```text
+services/routes.ts
+```
+
+The route service converts Databricks rows into the application's `Route` format and applies HokieAssist's accessibility-aware route-scoring logic.
+
+### Databricks Field Mapping
+
+```text
+route_id          → id
+distance_miles    → distance
+walking_time      → walkingTime
+seating           → seatingAvailable
+indoor_percentage → indoorPercentage
+restroom_nearby   → restroomNearby
+water_nearby      → waterNearby
+```
+
+---
+
+## Route Scoring
+
+The route scorer considers both accessibility needs and the student's current situation.
+
+Examples include:
+
+- `no_stairs`
+- `seating`
+- `elevator`
+- `restroom`
+- `water`
+- `indoor_route`
+- `low_stimulation`
+- Low or moderate energy
+- High or low urgency
+
+Lower-scoring routes are preferred.
+
+Some needs can act as hard requirements. For example, when `no_stairs` is selected, HokieAssist first tries to remove routes containing stairs before comparing the remaining options.
+
+This allows HokieAssist to recommend the route that best fits the individual student rather than automatically choosing the fastest route.
+
+---
+
+## Example Demo
+
+### Student Request
+
+> "I'm exhausted and running late. I'm at Newman Library and need to get to Squires Student Center. I don't want stairs and I need somewhere to sit."
+
+### Expected Flow
+
+```text
+Gemini
+  ↓
+origin = Newman Library
+destination = Squires Student Center
+accessNeeds = ["no_stairs", "seating"]
+energyLevel = "low"
+urgency = "high"
+  ↓
+Databricks
+  ↓
+Available Campus Routes
+  ↓
+Route Scoring
+  ↓
+Best Accessible Route
+  ↓
+Personalized Access Plan
+  ↓
+Focus Mode / Voice Guidance
+```
+
+This demonstrates that HokieAssist makes a recommendation based on the student's needs rather than automatically choosing the shortest path.
 
 ---
 
@@ -525,13 +352,20 @@ The exact integration will depend on the available HokieAI tools and APIs.
 - React Native
 - Expo
 - TypeScript
-- Expo Router
 
-### Data & AI
+### AI
+
+- Gemini
+- Accessibility-aware agent logic
+- Focus Mode
+- ElevenLabs voice guidance
+
+### Data
 
 - Databricks
-- HokieAI
-- AI/agent technologies
+- Databricks SQL
+- Unity Catalog
+- TypeScript Databricks SQL client
 
 ### Development
 
@@ -542,43 +376,108 @@ The exact integration will depend on the available HokieAI tools and APIs.
 
 ---
 
-## Project Structure
+## Current Project Structure
 
 ```text
 HokieAssist/
 │
-├── app/
-│   ├── index.tsx
-│   ├── map.tsx
-│   ├── events.tsx
-│   ├── access-plan.tsx
-│   ├── what-did-i-miss.tsx
-│   └── settings.tsx
-│
-├── components/
-│   ├── EventCard.tsx
-│   ├── RouteCard.tsx
-│   ├── AccessNeed.tsx
-│   ├── MapView.tsx
-│   └── AIChat.tsx
-│
-├── services/
-│   ├── agent.ts
-│   ├── hokieai.ts
-│   ├── databricks.ts
-│   ├── routes.ts
-│   └── events.ts
+├── assets/
 │
 ├── data/
 │   ├── buildings.json
-│   ├── routes.json
+│   ├── conditions.json
 │   ├── events.json
-│   └── conditions.json
+│   └── routes.json
 │
-├── assets/
+├── server/
+│   └── services/
+│       ├── databricks.ts
+│       └── elevenlabs.ts
 │
+├── services/
+│   ├── accessPlan.ts
+│   ├── agent.ts
+│   ├── aiParser.ts
+│   ├── focusMode.ts
+│   ├── requestParser.ts
+│   ├── routes.ts
+│   ├── testAgent.ts
+│   └── types.ts
+│
+├── src/
+│
+├── app.json
 ├── package.json
 └── README.md
+```
+
+The JSON files inside `data/` are useful for development and demo preparation. The integrated agent route flow retrieves route data from Databricks.
+
+---
+
+## Getting Started
+
+### Requirements
+
+- Node.js
+- npm
+- Git
+- VS Code
+- Expo Go
+- Access to the team's Databricks workspace for Databricks-connected features
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/malip23/HokieAssist.git
+cd HokieAssist
+```
+
+### Install Application Dependencies
+
+```bash
+npm install
+```
+
+### Install Server Dependencies
+
+```bash
+cd server
+npm install
+cd ..
+```
+
+### Environment Configuration
+
+The project uses local environment variables for external services.
+
+Do **not** commit `.env` files or API credentials.
+
+For Databricks, the local server environment uses:
+
+```text
+DATABRICKS_SERVER_HOSTNAME=your-databricks-hostname
+DATABRICKS_HTTP_PATH=your-sql-warehouse-http-path
+```
+
+Each developer should authenticate to Databricks using their own authorized account.
+
+### Check TypeScript
+
+```bash
+npx tsc --noEmit
+```
+
+### Start the Expo Application
+
+```bash
+npx expo start
+```
+
+If the standard connection does not work:
+
+```bash
+npx expo start --tunnel
 ```
 
 ---
@@ -587,23 +486,19 @@ HokieAssist/
 
 ### Mali — AI Agent
 
-Branch: `mali/ai-agent`
+Responsibilities include:
 
-Responsibilities:
-
-- AI agent logic
-- Natural-language requests
+- Natural-language parsing
+- Gemini integration
 - Personalized access plans
 - Route reasoning
-- Dynamic route replanning
-- "What Did I Miss?"
-- HokieAI integration
+- Energy and urgency context
+- Focus Mode
+- AI-agent behavior
 
 ### Jada — Campus Data
 
-Branch: `jada/campus-data`
-
-Responsibilities:
+Responsibilities include:
 
 - Campus datasets
 - Buildings
@@ -615,27 +510,23 @@ Responsibilities:
 
 ### Cinthia — Frontend
 
-Branch: `cinthia/frontend`
-
-Responsibilities:
+Responsibilities include:
 
 - React Native application
 - Expo
 - Navigation
 - Maps
-- Event screens
-- Access preference screens
-- Personalized plan interface
-- AI interaction interface
+- Access-preference interfaces
+- Personalized-plan interface
 - UI/UX
 
 ---
 
 ## Git Workflow
 
-The `main` branch contains the stable version of the project.
+The `main` branch contains the shared integrated version of the project.
 
-Each team member works on their own branch:
+Each team member develops on their own branch:
 
 ```text
 main
@@ -645,23 +536,12 @@ main
 └── cinthia/frontend
 ```
 
-Team members should not directly push changes to `main`.
-
-### Workflow
-
-1. Pull the latest `main`
-2. Work on your assigned branch
-3. Commit your changes
-4. Push your branch
-5. Create a Pull Request
-6. Review the changes
-7. Merge into `main`
-
-Before starting work:
+Typical workflow:
 
 ```bash
 git checkout main
-git pull
+git pull origin main
+
 git checkout your-branch
 git merge main
 ```
@@ -670,116 +550,84 @@ After making changes:
 
 ```bash
 git status
-git add .
+git add <files-you-changed>
 git commit -m "Describe your changes"
-git push
+git push origin your-branch
 ```
+
+Then create a Pull Request into `main`.
+
+Team members should avoid committing:
+
+- `.env`
+- API credentials
+- `node_modules`
+- Generated local development-tool files
 
 ---
 
-## Getting Started
+## Accomplishments That We're Proud Of
 
-### Requirements
+We are proud that we were able to build HokieAssist as more than just a static accessibility tool.
 
-- Node.js 24.21.0
-- npm 11.19.0
-- Git
-- VS Code
-- Expo Go
+HokieAssist combines campus data, AI, and accessibility-aware route scoring to create personalized recommendations based on what a student needs in the moment.
 
-### Clone the Repository
+Instead of requiring students to identify a disability, HokieAssist focuses on needs such as avoiding stairs, minimizing walking, finding seating, reducing sensory overload, or staying near water and restrooms.
 
-```bash
-git clone https://github.com/malip23/HokieAssist.git
-```
+We also connected our campus route data to Databricks and integrated it with our existing route-planning system.
 
-Enter the project:
+Other accomplishments include:
 
-```bash
-cd HokieAssist
-```
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Start the Expo development server:
-
-```bash
-npx expo start
-```
-
-Scan the QR code using Expo Go on a mobile device.
-
-If the normal connection does not work:
-
-```bash
-npx expo start --tunnel
-```
+- Building an accessibility-first campus agent
+- Connecting HokieAssist route planning to Databricks
+- Integrating natural-language understanding with Gemini
+- Preserving accessibility-aware route scoring while moving route data into Databricks
+- Adding energy and urgency as route-planning context
+- Building Focus Mode for simplified guidance
+- Adding ElevenLabs voice guidance
+- Using GitHub branches and pull requests to combine work from multiple team members
 
 ---
 
-## Development Strategy
+## What We Learned
 
-We are building the project incrementally.
+Building HokieAssist required us to connect several different technologies into one working pipeline instead of treating them as separate features.
 
-### Phase 1 — Prototype
+We learned how to:
 
-```text
-Mock Campus Data
-       ↓
-Working Mobile UI
-       ↓
-Basic AI Agent Logic
-```
+- Structure campus data for AI-assisted decision making
+- Query Databricks from TypeScript
+- Convert database rows into application models
+- Combine AI parsing with accessibility rules
+- Handle asynchronous data inside an existing TypeScript agent
+- Use GitHub branches and pull requests for team development
+- Resolve merge conflicts while preserving multiple teammates' work
+- Design accessibility features around changing needs rather than diagnoses
 
-### Phase 2 — Integration
+Most importantly, we learned that accessibility is not one-size-fits-all.
 
-```text
-Frontend
-   ↓
-AI Agent
-   ↓
-Campus Data
-```
+The route that is fastest for one student may not be the route that is most usable for another.
 
-### Phase 3 — Data Intelligence
+---
 
-```text
-Campus Data
-   ↓
-Databricks
-   ↓
-AI Agent
-```
+## What's Next for HokieAssist
 
-### Phase 4 — AI Integration
+Future development could include:
 
-```text
-HokieAI
-   ↓
-AI Agent
-   ↓
-Databricks
-   ↓
-Personalized Campus Experience
-```
+- Official Virginia Tech accessibility and building data
+- Live elevator and entrance outage information
+- Construction and blocked-route feeds
+- Real-time crowd and noise information
+- Weather-aware route planning
+- Campus transportation integration
+- Expanded "What Did I Miss?" functionality
+- Live captioning
+- Visual descriptions
+- More robust dynamic replanning
+- Additional accessibility preference controls
+- Production authentication and deployment
 
-### Phase 5 — Dynamic Demo
-
-```text
-Student receives route
-        ↓
-Campus condition changes
-        ↓
-Agent detects change
-        ↓
-Route is recalculated
-        ↓
-Student receives updated plan
-```
+The long-term goal is to make navigating and participating in campus life easier for students with a wide range of visible, invisible, temporary, and fluctuating access needs.
 
 ---
 
@@ -787,9 +635,9 @@ Student receives updated plan
 
 ### Deloitte × Databricks
 
-## AI Agent for the Virginia Tech Student Experience
+### AI Agent for the Virginia Tech Student Experience
 
-HokieAssist is designed around the idea of a data-driven AI agent that understands campus events, buildings, routes, and changing campus conditions and uses that information to create a personalized experience for Virginia Tech students.
+HokieAssist demonstrates a data-driven AI agent that understands student needs, retrieves campus information, evaluates accessible options, and creates a personalized campus experience.
 
 ---
 
@@ -797,10 +645,4 @@ HokieAssist is designed around the idea of a data-driven AI agent that understan
 
 > **HokieAssist doesn't just tell students where to go. It understands what they need, understands what's happening around them, and helps them participate in campus life.**
 
-Our goal is to make Virginia Tech a smarter and more accessible campus by connecting information that students already need into one personalized experience.
-
----
-
-## Status
-
-🚧 **Currently in development for the Virginia Tech hackathon.**
+Our goal is to make Virginia Tech a smarter and more accessible campus by connecting information students already need into one personalized experience.
