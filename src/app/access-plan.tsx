@@ -4,6 +4,7 @@ import {
     useAudioPlayerStatus,
 } from 'expo-audio';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import * as Speech from 'expo-speech';
 import { useEffect, useMemo, useState } from 'react';
 
 import {
@@ -78,6 +79,11 @@ export default function AccessPlanScreen() {
     const [audioError, setAudioError] = useState<string | null>(
         null,
     );
+    const [isDeviceSpeaking, setIsDeviceSpeaking] =
+        useState(false);
+
+    const isNarrating =
+        playerStatus.playing || isDeviceSpeaking;
 
     const narrationText = useMemo(
         () =>
@@ -134,8 +140,16 @@ export default function AccessPlanScreen() {
     }, [selectedNeeds]);
 
     async function handleListenToRoute() {
-        if (playerStatus.playing) {
-            player.pause();
+        if (isNarrating) {
+            if (playerStatus.playing) {
+                player.pause();
+            }
+
+            if (isDeviceSpeaking) {
+                await Speech.stop();
+                setIsDeviceSpeaking(false);
+            }
+
             return;
         }
 
@@ -162,14 +176,39 @@ export default function AccessPlanScreen() {
             player.replace(nextAudioUri);
             player.play();
         } catch (error) {
-            console.error(
-                'Failed to prepare route narration:',
+            console.warn(
+                'Enhanced route narration unavailable. Using device voice:',
                 error,
             );
 
+            setAudioUri(null);
             setAudioError(
-                "Voice guidance isn't available right now. You can still follow the written route.",
+                "Using this device's voice while enhanced voice guidance is unavailable.",
             );
+            setIsDeviceSpeaking(true);
+
+            Speech.speak(narrationText, {
+                language: 'en-US',
+                rate: 0.92,
+                pitch: 1,
+                onDone: () => {
+                    setIsDeviceSpeaking(false);
+                },
+                onStopped: () => {
+                    setIsDeviceSpeaking(false);
+                },
+                onError: (speechError) => {
+                    console.warn(
+                        'Device narration failed:',
+                        speechError,
+                    );
+
+                    setIsDeviceSpeaking(false);
+                    setAudioError(
+                        "Voice guidance isn't available right now. You can still follow the written route.",
+                    );
+                },
+            });
         } finally {
             setIsPreparingAudio(false);
         }
@@ -312,7 +351,7 @@ export default function AccessPlanScreen() {
                         <Pressable
                             accessibilityRole="button"
                             accessibilityLabel={
-                                playerStatus.playing
+                                isNarrating
                                     ? 'Pause route narration'
                                     : audioUri
                                         ? 'Resume route narration'
@@ -332,7 +371,7 @@ export default function AccessPlanScreen() {
                         >
                             <Ionicons
                                 name={
-                                    playerStatus.playing
+                                    isNarrating
                                         ? 'pause-outline'
                                         : 'volume-high-outline'
                                 }
@@ -343,7 +382,7 @@ export default function AccessPlanScreen() {
                             <Text style={styles.secondaryButtonText}>
                                 {isPreparingAudio
                                     ? 'Preparing voice guidance…'
-                                    : playerStatus.playing
+                                    : isNarrating
                                         ? 'Pause narration'
                                         : audioUri
                                             ? 'Resume narration'

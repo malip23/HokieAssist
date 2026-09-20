@@ -143,7 +143,7 @@ export default function HomeScreen() {
           <QuickAction
             icon="scan-outline"
             label="Describe"
-            onPress={() => router.push('/live-event')}
+            onPress={() => router.push('/request')}
           />
 
           <QuickAction
@@ -300,12 +300,6 @@ export default function HomeScreen() {
           selectedIcon="calendar"
           label="Events"
           onPress={() => router.push('/events')}
-        />
-
-        <NavigationItem
-          icon="person-outline"
-          selectedIcon="person"
-          label="Profile"
         />
       </View>
     </SafeAreaView>

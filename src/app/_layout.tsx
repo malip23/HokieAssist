@@ -16,6 +16,7 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="index" />
+        <Stack.Screen name="request" />
         <Stack.Screen name="access-needs" />
         <Stack.Screen name="events" />
         <Stack.Screen name="access-plan" />

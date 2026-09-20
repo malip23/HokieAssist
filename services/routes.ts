@@ -71,9 +71,9 @@ async function loadDatabricksRoutes(
   origin: string,
   destination: string,
 ): Promise<Route[]> {
-  if (!apiUrl) {
-    return [];
-  }
+  if (!apiUrl || !useLiveRoutes) {
+  return [];
+}
 
   try {
     const query = new URLSearchParams({
