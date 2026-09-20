@@ -234,12 +234,27 @@ export default function AccessPlanScreen() {
 
                 <Pressable
                     accessibilityRole="button"
+                    accessibilityLabel="Enter live event mode"
+                    onPress={() => router.push('/live-event')}
+                    style={({ pressed }) => [
+                        styles.secondaryButton,
+                        pressed && styles.pressed,
+                    ]}
+                >
+                    <Text style={styles.secondaryButtonText}>
+                        Enter live event mode
+                    </Text>
+                </Pressable>
+
+                <Pressable
+                    accessibilityRole="button"
                     accessibilityLabel="Return to home"
                     onPress={() => router.replace('/')}
                     style={styles.homeButton}
                 >
                     <Text style={styles.homeButtonText}>Return home</Text>
                 </Pressable>
+
             </ScrollView>
         </SafeAreaView>
     );
