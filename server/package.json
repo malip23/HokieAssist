@@ -12,6 +12,7 @@
   "type": "commonjs",
   "dependencies": {
     "@databricks/sql": "^2.1.0",
+    "@elevenlabs/elevenlabs-js": "^2.68.0",
     "dotenv": "^18.0.1"
   },
   "devDependencies": {
