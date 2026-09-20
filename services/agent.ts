@@ -17,6 +17,10 @@ export function runHokieAgent(request: StudentRequest): AccessPlan {
     request.origin,
     request.destination,
     request.accessNeeds,
+    {
+      energyLevel: request.energyLevel,
+      urgency: request.urgency,
+    },
   );
 
   if (routes.length === 0) {
